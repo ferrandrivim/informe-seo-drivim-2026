@@ -47,7 +47,7 @@
             Target, Layers, Zap, Smartphone
         } from 'lucide-react';
 
-        // --- DADES COMPLETES DE L'INFORME ---
+        // --- DADES COMPLETES ---
 
         const SECTION_1_RISK_TABLE = [
             {
@@ -168,7 +168,7 @@
                 correct: 'border-green-500 bg-green-900/10'
             };
             return (
-                <div className={`p-5 rounded-lg border-l-4 ${statusColors[status] || 'border-gray-600 bg-gray-800'} shadow-md`}>
+                <div className={`p-5 rounded-lg border-l-4 ${statusColors[status] || 'border-gray-600 bg-gray-800'} shadow-md mb-6`}>
                     <h4 className="text-lg font-bold text-white mb-3">{title}</h4>
                     {children}
                 </div>
@@ -245,39 +245,99 @@
             <div className="space-y-6 animate-fadeIn">
                 <SectionCard title="2. Auditoria Tècnica Forense (Infraestructura i WPO)">
                     <p className="text-sm text-gray-400 mb-6 italic">Anàlisi creuada detallada de les captures de Core Web Vitals (Mètriques Web Principals: Mòbil vs Escriptori) per identificar l'arrel del problema.</p>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <Card title="2.1. El Col·lapse del Canal Mòbil" status="critical">
-                            <div className="space-y-3 text-gray-300 text-sm">
-                                <p className="flex items-start"><Smartphone size={16} className="mr-2 text-red-400 mt-1 flex-shrink-0"/> El rendiment mòbil no és simplement "lent", és <strong>disfuncional</strong>.</p>
-                                <ul className="list-disc pl-4 space-y-2">
-                                    <li><strong>L'Evidència:</strong> TTFB (Time To First Byte) de <strong>3,9 segons</strong>.</li>
-                                    <li><strong>L'Anàlisi Forense:</strong> Aquesta mètrica aïlla estrictament el rendiment del servidor (Backend). Quan un usuari fa clic, la pantalla es queda "congelada" 4 segons.</li>
-                                    <li><strong>La Paradoxa:</strong> A l'escriptori, el TTFB és d'1,5s. Confirma un problema de <strong>configuració deficient de la Caché</strong> per a dispositius mòbils.</li>
-                                    <li className="text-red-300"><strong>Impacte Econòmic:</strong> Rebot Zero. Paguem clics que marxen abans de carregar.</li>
+                    
+                    {/* 2.1 Mobile - Full Text + Accordion */}
+                    <Card title="2.1. El Col·lapse del Canal Mòbil (L'origen del problema)" status="critical">
+                        <div className="space-y-4 text-gray-300 text-sm">
+                            <p>El rendiment mòbil no és simplement "lent", és <strong>disfuncional i actua com un tallafocs comercial</strong>. En un entorn on el 70-80% del tràfic d'automoció és mòbil, aquestes mètriques són incompatibles amb la rendibilitat.</p>
+                            
+                            <div className="bg-gray-900/50 p-3 rounded border-l-2 border-red-500">
+                                <p className="text-white font-bold">L'Evidència:</p>
+                                <p>TTFB (Time To First Byte - Temps fins al primer byte) de <strong>3,9 segons</strong>.</p>
+                            </div>
+
+                            <AccordionItem title="Anàlisi Forense i Tècnica Detallada" defaultOpen={false}>
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-white font-bold mb-1">L'Anàlisi Forense Profunda:</p>
+                                        <p>Aquesta mètrica aïlla estrictament el rendiment del servidor (Backend). No té res a veure amb el pes de les imatges, el codi JavaScript o la renderització del navegador.</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-white font-bold mb-1">El Significat Real:</p>
+                                        <p>Quan un usuari fa clic a un anunci de Facebook o Google Ads des del mòbil, la seva pantalla es queda completament en blanc (o "congelada") durant gairebé 4 segons. El telèfon està esperant que el servidor de Drivim "pensi" i enviï el primer paquet de dades.</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-white font-bold mb-1">La Paradoxa Tècnica:</p>
+                                        <p>A l'escriptori, el TTFB és d'1,5s. Aquesta diferència massiva confirma que <strong>no és un problema de manca de potència del servidor (CPU/RAM), sinó d'una configuració deficient de la Caché.</strong> El sistema no està servint versions estàtiques (pre-renderitzades) als dispositius mòbils. Al contrari, sembla que està processant cada visita mòbil com si fos única, executant codi PHP pesat i consultes a la base de dades per a cada petició, saturant la capacitat de resposta.</p>
+                                    </div>
+                                </div>
+                            </AccordionItem>
+
+                            <div className="bg-red-900/20 p-3 rounded border border-red-500/30">
+                                <p className="text-red-300 font-bold mb-1">Impacte Econòmic (El "Rebot Zero"):</p>
+                                <p>Estem pagant clics a Google/Meta que tècnicament "reboten" abans que Google Analytics pugui fins i tot carregar-se per comptar-los. Això dispara el CPA (Cost Per Acquisition - Cost per Adquisició) real de forma invisible.</p>
+                            </div>
+                        </div>
+                    </Card>
+
+                    {/* 2.2 CLS - Full Text + Accordion */}
+                    <Card title="2.2. Inestabilitat Visual (CLS) en Escriptori: El problema de l'Experiència" status="critical">
+                        <div className="space-y-4 text-gray-300 text-sm">
+                            <div className="bg-gray-900/50 p-3 rounded border-l-2 border-red-500">
+                                <p className="text-white font-bold">L'Evidència:</p>
+                                <p>CLS (Cumulative Layout Shift - Desplaçament Acumulatiu del Disseny) de <strong>0,9</strong>.</p>
+                            </div>
+
+                            <AccordionItem title="Diagnòstic Tècnic Detallat" defaultOpen={false}>
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-white font-bold mb-1">El Fet Tècnic (Localització del Problema):</p>
+                                        <p>Un CLS de 0,9 és una desestabilització massiva que no afecta a tot el web per igual, sinó que es concentra amb <strong>precisió quirúrgica a la Homepage i a les Landing Pages de Model</strong> (les pàgines més visuals). Aquesta xifra indica que el 90% de l'estructura visual visible (Above the Fold) es desplaça <em>després</em> de pintar-se. Això confirma irrefutablement que el <strong>Slider Principal (Carrusel)</strong> i les capçaleres de marca s'estan injectant dinàmicament sense reservar l'espai al CSS, provocant un salt visual crític just quan l'usuari intenta fer clic.</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-white font-bold mb-1">L'Error de Codi Identificat:</p>
+                                        <p>El navegador "no sap" quin espai ocuparà la imatge o el bàner principal fins que el fitxer s'ha descarregat completament, provocant un salt massiu de tot el contingut inferior. Això és una violació directa de les bones pràctiques de Rendering Path.</p>
+                                    </div>
+                                </div>
+                            </AccordionItem>
+
+                            <div className="bg-green-900/20 p-3 rounded border border-green-500/30">
+                                <p className="text-green-300 font-bold mb-1">La Solució Obligatòria (No opcional):</p>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li><strong>Reserva d'Espai Estàtica:</strong> Implementar la propietat CSS <code>aspect-ratio</code> o definir <code>min-height</code> explícit a tots els contenidors superiors.</li>
+                                    <li><strong>Pre-assignació de Dimensions:</strong> Assegurar que els atributs <code>width</code> i <code>height</code> estan presents a l'HTML de les imatges principals per evitar el reflow.</li>
                                 </ul>
                             </div>
-                        </Card>
-                        <Card title="2.2. Inestabilitat Visual (CLS)" status="critical">
-                            <div className="space-y-3 text-gray-300 text-sm">
-                                <p className="flex items-start"><Server size={16} className="mr-2 text-red-400 mt-1 flex-shrink-0"/> Problema greu d'experiència d'usuari.</p>
-                                <ul className="list-disc pl-4 space-y-2">
-                                    <li><strong>L'Evidència:</strong> CLS (Cumulative Layout Shift) de <strong>0,9</strong>.</li>
-                                    <li><strong>El Fet Tècnic:</strong> El 90% de l'estructura visual es desplaça després de pintar-se. Localitzat quirúrgicament a la <strong>Homepage i Landing Pages de Model</strong>.</li>
-                                    <li><strong>L'Error de Codi:</strong> El navegador "no sap" quin espai ocuparà la imatge o el bàner principal fins que es descarrega.</li>
-                                    <li className="text-green-300"><strong>Solució Obligatòria:</strong> Implementar <code>aspect-ratio</code> o <code>min-height</code> al CSS.</li>
-                                </ul>
+
+                            <div>
+                                <p className="text-white font-bold mb-1">Impacte SEO:</p>
+                                <p>Aquest és un factor de rànquing directe (Core Web Vitals). Google penalitza activament els llocs amb alt CLS, fent més difícil posicionar per termes competitius com "comprar cotxe".</p>
                             </div>
-                        </Card>
-                    </div>
-                    <div className="bg-blue-900/10 p-4 rounded-lg border border-blue-800 mt-6">
-                        <h4 className="text-blue-300 font-bold mb-2">2.3. Enginyeria de Dades WordPress (Causa Arrel)</h4>
-                        <p className="text-gray-300 text-sm mb-3"><strong>Diagnòstic Tècnic Ampliat:</strong> L'auditoria externa confirma que la lentitud (TTFB de 3,9s) prové de la base de dades. En WordPress, això sol ser causat per l'acumulació de dades "escombraries" a <code>wp_options</code>.</p>
-                        <p className="text-white text-sm font-bold mb-2">Acció Quirúrgica:</p>
-                        <ol className="list-decimal pl-5 text-sm text-gray-400 space-y-1">
-                            <li><strong>Neteja de Transients:</strong> Eliminar registres temporals caducats.</li>
-                            <li><strong>Auditoria Plugins:</strong> Identificar càrregues lentes amb <em>Query Monitor</em>.</li>
-                            <li><strong>Implementació de Redis:</strong> Servir consultes des de RAM (0,5s) en lloc de disc (3s).</li>
-                        </ol>
+                        </div>
+                    </Card>
+
+                    {/* 2.3 WordPress */}
+                    <div className="bg-gray-800 p-5 rounded-lg border border-gray-600">
+                        <h4 className="text-lg font-semibold text-white mb-3 flex items-center"><Server className="mr-2 text-blue-400"/> 2.3. Enginyeria de Dades WordPress i WPO Profund (Causa Arrel)</h4>
+                        
+                        <div className="text-gray-300 space-y-3 mb-6">
+                            <p><span className="text-blue-300 font-bold">Diagnòstic Tècnic Ampliat:</span> L'auditoria externa confirma que la lentitud (TTFB de 3,9s) prové de la base de dades. En l'ecosistema WordPress detectat, això sol ser causat per l'acumulació de dades "escombraries" a la taula <code>wp_options</code> (dades de càrrega automàtica o autoloaded data) que es carreguen en cada petició, encara que no siguin necessàries. A mesura que el lloc ha crescut, aquesta taula s'ha fragmentat, obligant al servidor MySQL a llegir megabytes de dades inútils abans de poder servir el primer byte d'HTML.</p>
+                            <p className="font-bold text-white border-b border-gray-600 pb-1">Acció Quirúrgica Recomanada:</p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <AccordionItem title="1. Neteja de Transients">
+                                <p className="text-gray-300">Eliminar registres temporals caducats (dades de caché antigues, sessions d'usuari, etc.) que inflen la base de dades sense aportar valor.</p>
+                            </AccordionItem>
+                            
+                            <AccordionItem title="2. Auditoria de Plugins (Query Monitor)">
+                                <p className="text-gray-300">Utilitzar eines com <em>Query Monitor</em> per identificar quin plugin específic (sovint un de backups automàtics, un xat antic no desinstal·lat netament o un constructor visual pesat com Elementor) està generant les consultes lentes (<em>Slow Queries</em>).</p>
+                            </AccordionItem>
+                            
+                            <AccordionItem title="3. Implementació de Redis (Object Caching)">
+                                <p className="text-gray-300">Activar <em>Object Caching</em> al servidor per emmagatzemar els resultats de les consultes de base de dades a la memòria RAM. Això evita que el servidor hagi de "pensar" i calcular la mateixa consulta SQL complexa cada vegada que algú visita una fitxa de cotxe popular. Això és la diferència entre una web que triga 3 segons (disc) i una que en triga 0,5 (RAM).</p>
+                            </AccordionItem>
+                        </div>
                     </div>
                 </SectionCard>
             </div>
@@ -285,23 +345,26 @@
 
         const CroAudit = () => (
             <div className="space-y-6 animate-fadeIn">
-                <SectionCard title="3. Auditoria de Conversió i Integritat de Dades (CRO)">
+                <SectionCard title="3. AUDITORIA DE CONVERSIÓ I INTEGRITAT DE DADES (CRO)">
+                    <p className="text-sm text-gray-400 mb-4">Anàlisi profunda i recalculada dels esdeveniments de GA4 (Google Analytics 4).</p>
+                    
                     <AccordionItem title="3.1. Validació de Coherència del Funnel (Dades Correctes)" defaultOpen={true}>
-                        <p className="mb-2">Reanalitzant l'estructura de conversió sota la premissa que <code>form_submit</code> (intent) ha de ser equivalent a la suma agregada de tots els tipus de "Lead" (èxit):</p>
-                        <div className="grid grid-cols-2 gap-4 my-4">
-                            <div className="bg-gray-900 p-3 rounded border border-gray-700 text-center">
-                                <p className="text-xs text-gray-500 uppercase">Total Intents</p>
-                                <p className="text-2xl font-bold text-white">9.061</p>
-                                <p className="text-xs text-gray-600">form_submit</p>
+                        <div className="space-y-4">
+                            <p className="text-gray-300 text-sm">Reanalitzant l'estructura de conversió sota la premissa que <code>form_submit</code> (intent) ha de ser equivalent a la suma agregada de tots els tipus de "Lead" (èxit), la conclusió és positiva.</p>
+                            
+                            <div className="my-4 p-4 bg-gray-900 rounded border border-gray-700">
+                                <h5 className="text-white font-bold mb-2">Dades Agregades:</h5>
+                                <ul className="list-disc pl-5 text-gray-300 text-sm space-y-1">
+                                    <li>Total Intents (form_submit): <strong>9.061</strong></li>
+                                    <li>Total Èxits (Suma de 6 tipus de Lead): <strong>8.306</strong></li>
+                                </ul>
                             </div>
-                            <div className="bg-gray-900 p-3 rounded border border-green-500/30 text-center">
-                                <p className="text-xs text-gray-500 uppercase">Total Èxits</p>
-                                <p className="text-2xl font-bold text-green-400">8.306</p>
-                                <p className="text-xs text-gray-600">Suma Leads</p>
+
+                            <div className="space-y-2">
+                                <p className="text-gray-300 text-sm"><strong>El Diagnòstic:</strong> El sistema està capturant el <strong>91,7%</strong> de les conversions. El "gap" residual del 8,3% (755 usuaris) és una fricció estàndard en formularis llargs (usuaris que cliquen enviar però tenen el DNI incorrecte, telèfon invàlid o camps obligatoris buits).</p>
+                                <p className="text-green-300 text-sm font-semibold p-2 bg-green-900/10 rounded border border-green-900/30">Conclusió Tècnica: El tracking de conversions funciona correctament. No hi ha cap "forat negre". Els esforços de l'equip tècnic no s'han de destinar a arreglar el mesurament (que ja està bé), sinó a millorar el rendiment del servidor (Secció 2) per portar més usuaris a aquest punt del funnel.</p>
                             </div>
                         </div>
-                        <p className="mb-2 text-sm"><strong>El Diagnòstic:</strong> El sistema està capturant el <strong>91,7%</strong> de les conversions. El "gap" residual del 8,3% (755 usuaris) és una fricció estàndard.</p>
-                        <p className="text-green-300 text-sm font-semibold mt-2">Conclusió: El tracking funciona correctament. No hi ha cap "forat negre".</p>
                     </AccordionItem>
                 </SectionCard>
             </div>
@@ -310,6 +373,10 @@
         const ContentSeo = () => (
             <div className="space-y-6 animate-fadeIn">
                 <SectionCard title="4. Auditoria d'Estratègia de Continguts i SEO (On-Page)">
+                    <div className="mb-6 text-gray-300 text-sm p-4 bg-gray-900/50 rounded-lg border border-gray-700">
+                        <p>La correlació creuada entre els termes de cerca (GSC - Google Search Console) i les pàgines de destinació (GA4) revela una ineficiència estructural en l'embut d'adquisició orgànica. Tot i dominar termes de marca, les dades confirmen que el 25% del tràfic aterra en contingut informatiu sense passarel·les clares cap a la conversió, mentre que nínxols d'alta rendibilitat com "Taxi" o "Foton" queden infra-optimitzats amb CTRs (Click Through Rate - Taxa de Clics) baixos.</p>
+                    </div>
+
                     <div className="mb-6">
                         <h4 className="text-lg font-bold text-white mb-2">4.1. Anàlisi Exhaustiva de Pàgines de Destinació</h4>
                         <div className="overflow-x-auto rounded-lg border border-gray-700" style={{maxHeight: '400px'}}>
@@ -340,12 +407,39 @@
                         </div>
                     </div>
 
-                    <AccordionItem title="4.1.1 Diagnòstic i Estratègia MoFu" defaultOpen={true}>
-                        <ul className="list-disc pl-4 space-y-2 text-sm">
-                            <li><strong>Dominació 'Low Intent':</strong> Les URLs de Blog sumen 24.127 clics (27%). <strong>Acció:</strong> Implementar "Lead Magnets" (ex: Checklist Manteniment) per capturar emails i fer nurturing.</li>
-                            <li><strong>Foton Tunland:</strong> Supera models consolidats. Oportunitat en demanda de Pick-ups.</li>
-                            <li><strong>Col·lapse Bookcar:</strong> Temps crítics (46s). Urgent revisar UX.</li>
-                        </ul>
+                    <AccordionItem title="4.1.1 Diagnòstic Forense de Continguts i Estratègia" defaultOpen={true}>
+                        <div className="space-y-4">
+                            <div>
+                                <h5 className="font-bold text-white text-sm mb-1">Dominació del "Low Intent" (El problema del Blog):</h5>
+                                <p className="text-gray-300 text-xs leading-relaxed">Les URLs de Blog sumen 24.127 clics, representant gairebé el 27% del tràfic total. <strong>Problema:</strong> Tenim un volum massiu d'usuaris que entren per "saber" (canvi d'oli, pressió) i marxen sense "comprar". <strong>Acció Requerida:</strong> Transformar aquestes pàgines en punts d'entrada al Taller. Cal implementar widgets de "Cita Prèvia Express" dins del cos de l'article, oferint un descompte immediat per capturar aquest interès tècnic.</p>
+                            </div>
+                            <div>
+                                <h5 className="font-bold text-white text-sm mb-1">La Força Emergent de Foton (files 7 i 23):</h5>
+                                <p className="text-gray-300 text-xs leading-relaxed">La Foton Tunland G7 i V9 sumen 2.615 clics orgànics. Això supera a moltes pàgines de models consolidats. <strong>Oportunitat:</strong> Hi ha una demanda insatisfeta de Pick-ups industrials que les marques tradicionals han abandonat. Drivim té l'oportunitat de ser el líder del mercat xinès a Catalunya. Cal millorar les fitxes de producte (més fotos, vídeos de prova) per augmentar el temps d'estada, que ara és just.</p>
+                            </div>
+                            <div>
+                                <h5 className="font-bold text-white text-sm mb-1">El col·lapse de retenció a Bookcar (Lloguer):</h5>
+                                <p className="text-gray-300 text-xs leading-relaxed">Les pàgines de lloguer a Badalona i Mataró tenen temps d'estada crítics (46s i 39s). <strong>Diagnòstic:</strong> Això sol indicar que l'usuari no troba el que busca immediatament (preu o disponibilitat) o que el procés de reserva és confús. És urgent revisar la UX (User Experience - Experiència d'Usuari) d'aquestes pàgines.</p>
+                            </div>
+                        </div>
+                    </AccordionItem>
+
+                    <AccordionItem title="4.1.2 Estratègia 'Middle of Funnel' (MoFu): Monetitzant el Blog (Fase 2)" defaultOpen={false}>
+                         <div className="space-y-4 text-sm text-gray-300">
+                             <div>
+                                <h5 className="font-bold text-white mb-1">El Tresor sense Explotar:</h5>
+                                <p className="text-xs leading-relaxed">Tenim milers de visites mensuals en articles de manteniment (oli, pneumàtics, corretja). Actualment, l'única opció que donem a aquest usuari és "demanar cita". Molts no estan llestos per comprar avui, però ho estaran d'aquí a 3 mesos. Aquest tràfic, que actualment es considera "de baixa qualitat" per la seva baixa conversió directa, és en realitat un actiu de brand awareness massiu que s'està desaprofitant per falta de mecanismes de retenció.</p>
+                             </div>
+                             <div>
+                                <h5 className="font-bold text-white mb-1">Estratègia de Captació (Nurturing):</h5>
+                                <p className="text-xs leading-relaxed">En lloc de perdre aquesta visita per sempre (i haver de tornar a pagar per ella en el futur), implementarem "Lead Magnets" de valor afegit i baix compromís. A diferència d'un descompte directe que erosiona el marge, oferirem utilitat i seguretat.</p>
+                                <p className="italic mt-1 text-xs text-blue-300">Exemple: "Descarrega la 'Checklist de Manteniment: 10 punts a revisar abans d'un viatge llarg' o la 'Guia per allargar la vida dels teus pneumàtics'".</p>
+                             </div>
+                             <div>
+                                <h5 className="font-bold text-white mb-1">Resultat:</h5>
+                                <p className="text-xs leading-relaxed">Capturem el correu electrònic de l'usuari i entrem en el seu Top of Mind mitjançant una seqüència automatitzada de correus (Newsletter) amb consells de mecànica i recordatoris de manteniment. Això genera confiança i autoritat, assegurant que quan l'usuari realment necessiti una reparació o revisió, Drivim serà la seva primera opció mental ("el concessionari que em va ajudar"), blindant-lo contra les ofertes de la competència. A més, permet segmentar la base de dades segons els interessos (qui baixa la guia de pneumàtics, probablement necessitarà un canvi aviat).</p>
+                             </div>
+                         </div>
                     </AccordionItem>
 
                     <div className="mt-8">
@@ -374,9 +468,35 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-                            <h5 className="font-bold text-blue-300 mb-1 text-sm">4.2.1 Auditoria de "Keyword Gap" (Fase 2)</h5>
-                            <p className="text-gray-400 text-xs">Competidors com Quadis acaparen termes transaccionals ("oferta peugeot 3008 km0"). <strong>Acció:</strong> Crear "Hubs Transaccionals" (pàgines de categoria optimitzades per clusters semàntics).</p>
+
+                        <AccordionItem title="Anàlisi d'Oportunitats i Amenaces de Cerca" defaultOpen={true}>
+                             <div className="space-y-4 text-sm text-gray-300">
+                                 <div>
+                                     <h5 className="font-bold text-white mb-1">Protecció de Marca i "Misspellings":</h5>
+                                     <p className="text-xs leading-relaxed">Un volum significatiu d'usuaris (més de 1.000 clics) arriba cercant la marca incorrectament ("driving badalona", "drivin"). Cal assegurar que les campanyes de SEM (Search Engine Marketing) tenen aquestes variants com a keywords negatives o exactes per protegir la marca de la competència que vulgui licitar per elles.</p>
+                                 </div>
+                                 <div>
+                                     <h5 className="font-bold text-white mb-1">El Gegant Dorment Xinès (DFSK/Foton):</h5>
+                                     <p className="text-xs leading-relaxed mb-1">Les consultes #13, #14 i #19 tenen impressions massives (25k, 15k, 11k) però CTRs (Click Through Rate) molt baixos (&lt;1,7%).</p>
+                                     <ul className="list-disc pl-5 mt-1 text-xs">
+                                         <li><strong>Interpretació:</strong> Drivim apareix a la primera pàgina (posicions 6-8), la qual cosa genera milers d'impressions, però l'usuari no fa clic.</li>
+                                         <li><strong>Acció:</strong> Això és una oportunitat d'or. Si millorem els Meta Titles i Meta Descriptions per fer-los més atractius (ex: incloure "En estoc", "Lliurament immediat", "Preu"), podríem duplicar el tràfic d'aquestes marques sense necessitat de pujar posicions, només millorant la persuasió del resultat de cerca.</li>
+                                     </ul>
+                                 </div>
+                                 <div>
+                                     <h5 className="font-bold text-white mb-1">Intenció Taller:</h5>
+                                     <p className="text-xs leading-relaxed">Les cerques específiques de taller (#8, #25) tenen CTRs saludables, confirmant que quan l'usuari busca servei postvenda, Drivim és rellevant. Cal potenciar les fitxes de Google Maps específiques per a Taller per capturar més d'aquest tràfic local.</p>
+                                 </div>
+                             </div>
+                        </AccordionItem>
+                        
+                        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700 mt-4">
+                            <h5 className="font-bold text-blue-300 mb-2 text-sm">4.2.1 Auditoria de "Keyword Gap": On ens guanya la competència? (Fase 2)</h5>
+                            <div className="space-y-3 text-xs text-gray-400">
+                                <p><strong>El Problema:</strong> Tot i tenir un domini local fort, les dades indiquen que competidors com Quadis o Romauto acaparen el tràfic de termes transaccionals de gamma alta com "oferta peugeot 3008 km0" o "preu citroen c4 nou". Drivim posiciona molt bé per termes de marca ("Drivim") o informatius ("canvi oli"), però perd la batalla en la cerca directa de producte genèric. En un mercat on l'intenció de cerca defineix la conversió, els competidors amb landing pages específiques per a cerques de "Long Tail" transaccional (ex: [Marca] [Model] [Atribut] [Localització]) estan capturant un tràfic molt més qualificat. Drivim depèn en excés de categories genèriques o entrades de blog que no satisfan directament la necessitat de compra immediata.</p>
+                                <p><strong>L'Oportunitat Perduda:</strong> Estem deixant que la competència s'emporti el client que ja té la targeta de crèdit a la mà. Aquest usuari no vol llegir sobre manteniment, vol veure estoc i preu. La manca de pàgines específiques tipus "Clúster" permet que operadors més grans amb estructures de web més profundes (Quadis) o més agressives en SEO (Romauto) ocupin les posicions TOP 3 per a cerques de diners.</p>
+                                <p><strong>Acció Estratègica:</strong> Realitzar una auditoria de continguts específica ("Content Gap Analysis") per identificar aquestes fugues de tràfic. L'objectiu és crear un nou nivell d'arquitectura web basat en "Hubs Transaccionals". No n'hi ha prou amb la fitxa de producte individual (que caduca quan es ven el cotxe); calen pàgines de categoria persistents optimitzades per a clusters semàntics (ex: "Peugeot 3008 KM0 Barcelona"). Aquestes pàgines actuaran com a xarxes d'arrossegament per capturar tota la demanda específica que ara es filtra cap a la competència.</p>
+                            </div>
                         </div>
                     </div>
                 </SectionCard>
@@ -540,16 +660,17 @@
             const [activeSection, setActiveSection] = useState('executive');
             const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+            // Added color property to each section
             const sections = [
-                { id: 'executive', title: '1. Diagnòstic Executiu', icon: <Activity size={20} /> },
-                { id: 'technical', title: '2. Auditoria Tècnica', icon: <Server size={20} /> },
-                { id: 'cro', title: '3. Conversió i Integritat', icon: <BarChart2 size={20} /> },
-                { id: 'content', title: '4. Continguts i SEO', icon: <Globe size={20} /> },
-                { id: 'acquisition', title: '5. Adquisició', icon: <Users size={20} /> },
-                { id: 'integrity', title: '6. Detall Integritat GA4', icon: <Lock size={20} /> },
-                { id: 'external', title: '7. Auditoria Externa', icon: <Search size={20} /> },
-                { id: 'strategy', title: '8. Extensió Estratègica', icon: <Zap size={20} /> },
-                { id: 'roadmap', title: '9. Pla d\'Execució', icon: <Target size={20} /> },
+                { id: 'executive', title: '1. Diagnòstic Executiu', icon: <Activity size={20} />, color: 'text-sky-400' },
+                { id: 'technical', title: '2. Auditoria Tècnica', icon: <Server size={20} />, color: 'text-violet-400' },
+                { id: 'cro', title: '3. Conversió i Integritat', icon: <BarChart2 size={20} />, color: 'text-emerald-400' },
+                { id: 'content', title: '4. Continguts i SEO', icon: <Globe size={20} />, color: 'text-amber-400' },
+                { id: 'acquisition', title: '5. Adquisició', icon: <Users size={20} />, color: 'text-orange-400' },
+                { id: 'integrity', title: '6. Detall Integritat GA4', icon: <Lock size={20} />, color: 'text-rose-400' },
+                { id: 'external', title: '7. Auditoria Externa', icon: <Search size={20} />, color: 'text-cyan-400' },
+                { id: 'strategy', title: '8. Extensió Estratègica', icon: <Zap size={20} />, color: 'text-fuchsia-400' },
+                { id: 'roadmap', title: '9. Pla d\'Execució', icon: <Target size={20} />, color: 'text-indigo-400' },
             ];
 
             return (
@@ -567,10 +688,11 @@
                                 <button
                                     key={section.id}
                                     onClick={() => setActiveSection(section.id)}
+                                    // Use section.color when inactive
                                     className={`w-full flex items-center p-3 rounded-lg transition-all duration-200 group ${
                                         activeSection === section.id 
                                             ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 
-                                            : 'hover:bg-gray-700 text-gray-400 hover:text-white'
+                                            : `hover:bg-gray-700 ${section.color} hover:text-white`
                                     }`}
                                 >
                                     <span className={`flex-shrink-0 transition-transform duration-200 ${activeSection === section.id ? 'scale-110' : 'group-hover:scale-110'}`}>
