@@ -364,6 +364,57 @@
                                 <p className="text-gray-300 text-sm"><strong>El Diagnòstic:</strong> El sistema està capturant el <strong>91,7%</strong> de les conversions. El "gap" residual del 8,3% (755 usuaris) és una fricció estàndard en formularis llargs (usuaris que cliquen enviar però tenen el DNI incorrecte, telèfon invàlid o camps obligatoris buits).</p>
                                 <p className="text-green-300 text-sm font-semibold p-2 bg-green-900/10 rounded border border-green-900/30">Conclusió Tècnica: El tracking de conversions funciona correctament. No hi ha cap "forat negre". Els esforços de l'equip tècnic no s'han de destinar a arreglar el mesurament (que ja està bé), sinó a millorar el rendiment del servidor (Secció 2) per portar més usuaris a aquest punt del funnel.</p>
                             </div>
+                            
+                            <div className="overflow-x-auto rounded-lg border border-gray-700 mb-4">
+                                <table className="w-full text-sm text-left text-gray-300">
+                                    <thead className="text-xs text-gray-200 uppercase bg-gray-700">
+                                        <tr>
+                                            <th className="px-4 py-3">Concepte</th>
+                                            <th className="px-4 py-3">Esdeveniments</th>
+                                            <th className="px-4 py-3 text-right">Volum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-700">
+                                        {INTEGRITY_DATA.map((row, idx) => (
+                                            <tr key={idx} className="bg-gray-800">
+                                                <td className="px-4 py-3 font-medium text-white">{row.concept}</td>
+                                                <td className="px-4 py-3 text-xs">{row.events}</td>
+                                                <td className="px-4 py-3 text-right font-bold">{row.volume}</td>
+                                            </tr>
+                                        ))}
+                                        <tr className="bg-gray-750 border-t-2 border-gray-600">
+                                            <td className="px-4 py-3 text-white font-bold">GAP</td>
+                                            <td className="px-4 py-3 text-xs">A - B</td>
+                                            <td className="px-4 py-3 text-right text-yellow-400 font-bold">755</td>
+                                        </tr>
+                                        <tr className="bg-blue-900/20 border-t border-gray-600">
+                                            <td className="px-4 py-3 text-blue-300 font-bold">% COHERÈNCIA</td>
+                                            <td className="px-4 py-3"></td>
+                                            <td className="px-4 py-3 text-right text-blue-300 text-lg font-bold">91,7%</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p className="text-xs text-gray-500 italic mb-4">*Nota: S'han exclòs expressament els leads provinents de canals de Xat, ja que tenen el seu propi mecanisme de submissió. Es distingeix entre <code>chat_lead</code> (antic proveïdor Serviceform, donat de baixa a finals de 2025) i <code>timbal_chat_lead</code> (proveïdor actual).</p>
+
+                            <div className="bg-gray-900 p-4 rounded border border-gray-700">
+                                <h5 className="font-bold text-white mb-2">ANÀLISI FINAL DE DADES:</h5>
+                                <div className="space-y-4 text-sm text-gray-300">
+                                    <div>
+                                        <p className="font-bold text-green-400 mb-1">Integritat Confirmada:</p>
+                                        <p>Tenim una coincidència del 91,7% entre la intenció i l'èxit. Aquesta xifra és extremadament alta i un estàndard de qualitat excel·lent per a un entorn web complex com el d'automoció. El sistema de mesurament està funcionant amb una precisió quirúrgica. Un marge de discrepància residual del 8,3% (755 casos) no només és acceptable, sinó que és totalment esperable en formularis senzills de captació. Aquesta diferència representa usuaris reals que interactuen amb el formulari i mostren una intenció clara (<code>form_submit</code>), però topen amb validacions de camp bàsiques (format de correu incorrecte, telèfon incomplet, camp obligatori buit) i abandonen el procés abans d'arribar a la pàgina d'agraïment. Per tant, no estem davant d'un error de codi o de tracking, sinó d'una àrea clara de millora d'Experiència d'Usuari (UX) per reduir aquesta fricció final.</p>
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-red-400 mb-1">Fals Positiu en Consum de Vídeo (WPO):</p>
+                                        <p className="mb-2">L'esdeveniment <code>video_progress</code> registra un volum massiu de <strong>254.828 interaccions</strong>, però sota l'òptica forense i sabent que els vídeos de fitxa de vehicle s'inicien automàticament (<code>autoplay</code>), aquesta mètrica es converteix en un 'Miratge de Dades' o fals positiu. No estem mesurant l'interès genuí de l'usuari ni el consum voluntari de contingut, sinó simplement la capacitat del navegador per començar a renderitzar el reproductor. Això genera un fals positiu d'engagement que podria portar a decisions de continguts i inversió errònies si es prengués com a senyal de qualitat real.</p>
+                                        <p className="text-red-300 font-bold mt-1">Conseqüència Devastadora (Tècnica i WPO):</p>
+                                        <p>Des d'una perspectiva d'enginyeria de rendiment (WPO), forçar la descàrrega de fragments de vídeo (buffering) simultàniament a la càrrega del document HTML principal és una pràctica destructiva, especialment en xarxes mòbils 4G. El vídeo satura l'ample de banda disponible, competint amb els recursos crítics (CSS, JS) i causant directament el TTFB de 3,9s i el retard en el LCP.</p>
+                                        <p className="text-green-300 font-bold mt-2">Acció:</p>
+                                        <p>Desactivar l'autoplay immediatament i implementar una càrrega diferida ("Lazy Load" o "Click-to-Play").</p>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </AccordionItem>
                 </SectionCard>
@@ -506,61 +557,23 @@
         const AcquisitionAudit = () => (
             <div className="space-y-6 animate-fadeIn">
                 <SectionCard title="5. Auditoria d'Adquisició i Dependència">
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <Card title="5.1. Vulnerabilitat Paid Search" status="alert">
-                            <p className="text-gray-300 text-sm mb-2"><strong>Dada:</strong> 39,37% del tràfic és Paid.</p>
-                            <p className="text-gray-300 text-sm"><strong>Conseqüència:</strong> El WPO deficient baixa el Quality Score, encarint el CPC artificialment.</p>
-                        </Card>
-                        <Card title="5.2. Potencial Social Orgànic" status="correct">
-                            <p className="text-gray-300 text-sm mb-2"><strong>Dada:</strong> 15,8% tràfic social orgànic.</p>
-                            <p className="text-gray-400 text-sm"><strong>Lectura:</strong> Comunitat fidel. Cal revisar Landing Pages específiques.</p>
-                        </Card>
+                    <div className="mb-4 text-sm text-gray-400">
+                        <p>Anàlisi de l'estructura de canals i la seva sostenibilitat.</p>
                     </div>
-                </SectionCard>
-            </div>
-        );
-
-        const DataIntegrity = () => (
-            <div className="space-y-6 animate-fadeIn">
-                <SectionCard title="6. Integritat de Dades - Events GA4">
-                    <div className="overflow-x-auto rounded-lg border border-gray-700 mb-4">
-                        <table className="w-full text-sm text-left text-gray-300">
-                            <thead className="text-xs text-gray-200 uppercase bg-gray-700">
-                                <tr>
-                                    <th className="px-4 py-3">Concepte</th>
-                                    <th className="px-4 py-3">Esdeveniments</th>
-                                    <th className="px-4 py-3 text-right">Volum</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-700">
-                                {INTEGRITY_DATA.map((row, idx) => (
-                                    <tr key={idx} className="bg-gray-800">
-                                        <td className="px-4 py-3 font-medium text-white">{row.concept}</td>
-                                        <td className="px-4 py-3 text-xs">{row.events}</td>
-                                        <td className="px-4 py-3 text-right font-bold">{row.volume}</td>
-                                    </tr>
-                                ))}
-                                <tr className="bg-gray-750 border-t-2 border-gray-600">
-                                    <td className="px-4 py-3 text-white font-bold">GAP</td>
-                                    <td className="px-4 py-3 text-xs">A - B</td>
-                                    <td className="px-4 py-3 text-right text-yellow-400 font-bold">755</td>
-                                </tr>
-                                <tr className="bg-blue-900/20 border-t border-gray-600">
-                                    <td className="px-4 py-3 text-blue-300 font-bold">% COHERÈNCIA</td>
-                                    <td className="px-4 py-3"></td>
-                                    <td className="px-4 py-3 text-right text-blue-300 text-lg font-bold">91,7%</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p className="text-xs text-gray-500 italic mb-4">*Nota: Exclosos leads de Xat.</p>
-
-                    <AccordionItem title="Fals Positiu en Consum de Vídeo (WPO)" defaultOpen={true}>
-                        <p className="text-sm text-gray-300">
-                            L'esdeveniment <code>video_progress</code> (254k) és un miratge per l'<strong>Autoplay</strong>.
-                            <br/><span className="text-red-400 font-bold">Conseqüència:</span> Satura l'ample de banda mòbil i causa el TTFB lent.
-                            <br/><span className="text-green-400 font-bold">Acció:</span> Desactivar l'autoplay immediatament.
-                        </p>
+                    
+                    <AccordionItem title="5.1. Vulnerabilitat Financera en Paid Search" defaultOpen={true}>
+                         <div className="space-y-2 text-sm text-gray-300">
+                             <p><strong>Dada:</strong> El 39,37% del tràfic total prové de Paid Search (209.530 sessions).</p>
+                             <p><strong>El Risc Ocult (Quality Score):</strong> Google Ads utilitza la qualitat de la pàgina de destinació com a factor clau per determinar el preu del clic (CPC - Cost Per Click). Amb els problemes de Core Web Vitals (WPO) detectats a la secció 2 (Lentitud mòbil, Inestabilitat visual), és altament probable que el Quality Score de Drivim sigui baix (per sota de 5/10).</p>
+                             <p><strong>Conseqüència Financera:</strong> Estem pagant una "multa d'eficiència" a Google en cada subhasta. Podríem estar pagant un 20-30% més per clic que la competència per la mateixa posició, simplement perquè la nostra web és tècnicament deficient. Optimitzar el WPO és, literalment, estalviar diners en publicitat.</p>
+                         </div>
+                    </AccordionItem>
+                    
+                    <AccordionItem title="5.2. El Potencial del Social Orgànic" defaultOpen={true}>
+                        <div className="space-y-2 text-sm text-gray-300">
+                            <p><strong>Dada:</strong> 15,8% de tràfic prové d'Organic Social. Això és sorprenentment alt per al sector automoció, que sol dependre més de Paid.</p>
+                            <p><strong>Lectura:</strong> Indica una comunitat fidel i activa a xarxes (Instagram/TikTok/Facebook). No obstant això, la conversió d'aquest canal (1,49%) és inferior a la mitjana. Cal revisar les Landing Pages on aterra aquest tràfic social: ¿Són la Home genèrica o són ofertes específiques "Mobile-First"?</p>
+                        </div>
                     </AccordionItem>
                 </SectionCard>
             </div>
@@ -568,7 +581,7 @@
 
         const ExternalAudit = () => (
             <div className="space-y-6 animate-fadeIn">
-                <SectionCard title="7. Auditoria Externa i Benchmarking (Dades Reals)">
+                <SectionCard title="6. Auditoria Externa i Benchmarking (Dades Reals)">
                     <div className="overflow-x-auto rounded-lg border border-gray-700 mb-6">
                         <table className="w-full text-xs text-left text-gray-300">
                             <thead className="text-xs text-gray-200 uppercase bg-gray-700">
@@ -595,59 +608,91 @@
                             </tbody>
                         </table>
                     </div>
-                    <AccordionItem title="7.2. Anàlisi de Profunditat" defaultOpen={true}>
-                        <ul className="list-disc pl-4 space-y-2 text-sm text-gray-300">
-                            <li><strong>Drivim vs Quadis:</strong> Quadis té força bruta. Drivim guanya en agilitat i nínxol. Estratègia: Potenciar Long Tail.</li>
-                            <li><strong>Drivim vs Vallescar:</strong> Mirall tecnològic (WordPress). Si Drivim soluciona el servidor, supera a Vallescar.</li>
-                            <li><strong>Drivim vs M-Automoció:</strong> M-Automoció forta a BCN. Estratègia: Expandir model "Servei Oficial" cap a BCN.</li>
-                        </ul>
+                    <AccordionItem title="6.2. Anàlisi de Profunditat: On Guanya i On Perd Drivim" defaultOpen={true}>
+                         <div className="space-y-4 text-sm text-gray-300">
+                             <div>
+                                 <h5 className="font-bold text-white mb-1">Drivim vs. Quadis (La Batalla de David contra Goliat):</h5>
+                                 <p className="text-xs leading-relaxed"><strong>Diagnòstic:</strong> Quadis juga amb "força bruta". El seu stack tecnològic és propietari i robust (Enterprise), la qual cosa els dona una velocitat i estabilitat que Drivim ara mateix no té (per culpa del WordPress mal optimitzat).</p>
+                                 <p className="text-xs leading-relaxed mt-1"><strong>L'Oportunitat de Drivim:</strong> Quadis és un transatlàntic; li costa girar. Drivim, amb el seu blog i continguts de nínxol (Foton, DFSK, articles de manteniment), té una agilitat de "Guerrilla SEO" que Quadis no replica. Mentre ells paguen per "comprar cotxe", Drivim guanya tràfic orgànic per "canvi corretja distribució". <strong>L'estratègia</strong> ha de ser seguir potenciant la cua llarga (Long Tail) on Quadis no arriba.</p>
+                             </div>
+                             <div>
+                                 <h5 className="font-bold text-white mb-1">Drivim vs. Vallescar (El Mirall Tecnològic):</h5>
+                                 <p className="text-xs leading-relaxed"><strong>Diagnòstic:</strong> Vallescar és el competidor més similar tècnicament. També utilitzen WordPress com a base per a molts dels seus portals de contingut/grup. Això significa que pateixen les mateixes limitacions tècniques que Drivim.</p>
+                                 <p className="text-xs leading-relaxed mt-1"><strong>El Factor Diferencial:</strong> Si Drivim soluciona el problema del TTFB (3,9s) i implementa Edge Caching, superarà tecnològicament a Vallescar demà mateix. Ara mateix, estan empatats en tecnologia, però Vallescar té el domini històric del Vallès. Guanyar en velocitat mòbil seria l'avantatge competitiu definitiu per robar quota de mercat a les zones limítrofes.</p>
+                             </div>
+                             <div>
+                                 <h5 className="font-bold text-white mb-1">Drivim vs. M-Automoció (La Lluita per Barcelona):</h5>
+                                 <p className="text-xs leading-relaxed"><strong>Diagnòstic:</strong> M-Automoció té un disseny molt Mobile-First i net. La seva UX és superior a la de Drivim actualment (menys salts visuals, menys CLS).</p>
+                                 <p className="text-xs leading-relaxed mt-1"><strong>L'Estratègia Guanyadora:</strong> Drivim ha demostrat (amb les dades de GSC) que domina les cerques d'intenció "Taller" a Badalona (posicions 1-2). M-Automoció és forta en "Venda" a BCN. L'estratègia no ha de ser atacar frontalment la venda a BCN (molt car en CPC), sinó expandir el model d'èxit de "Servei Oficial / Taller" cap a Barcelona, on la competència sol descuidar el SEO local de postvenda en favor de la venda de vehicle nou.</p>
+                             </div>
+                             <div className="bg-gray-900 p-3 rounded border border-gray-700 mt-2">
+                                 <h5 className="font-bold text-blue-300 text-xs mb-1">CONCLUSIÓ DEL BENCHMARKING:</h5>
+                                 <p className="text-xs text-gray-400">Tecnològicament, Drivim està per sota de Quadis (per pressupost/stack) però pot superar fàcilment a Grup Maas i Vallescar si resol el problema de servidor. Estratègicament, la capil·laritat local de Drivim (separar Taller de Vendes) és superior a la mitjana del sector i és el seu veritable "fòssat defensiu" (Moat).</p>
+                             </div>
+                         </div>
                     </AccordionItem>
-                </SectionCard>
-            </div>
-        );
-
-        const Section8Strategy = () => (
-            <div className="space-y-6 animate-fadeIn">
-                <SectionCard title="8. Extensió Estratègica (Fase 2)">
-                    <p className="text-gray-400 text-sm mb-4">Detalls integrats a les seccions 2.3, 4.1.2 i 4.2.1.</p>
-                    <div className="bg-gray-900 p-4 rounded border border-gray-700">
-                        <h4 className="text-white font-bold mb-2">Enginyeria de Dades WordPress (Resum)</h4>
-                        <ol className="list-decimal pl-5 text-sm text-gray-400 space-y-1">
-                            <li>Neteja de Transients.</li>
-                            <li>Auditoria de Plugins (Query Monitor).</li>
-                            <li>Implementació de Redis (Object Caching).</li>
-                        </ol>
-                    </div>
                 </SectionCard>
             </div>
         );
 
         const Roadmap = () => (
             <div className="space-y-6 animate-fadeIn">
-                <SectionCard title="9. Llistat d'Execució per Prioritats">
+                <SectionCard title="7. Llistat d'Execució per Prioritats">
                     <div className="space-y-4">
                         <div className="border-l-4 border-red-500 pl-4 py-2">
-                            <h4 className="text-red-400 font-bold uppercase mb-2">Prioritat Crítica: WPO i UX</h4>
-                            <ul className="space-y-2 text-gray-300 text-sm">
-                                <li>1. Implementar "Edge Caching" Mòbil (TTFB &lt;0,8s).</li>
-                                <li>2. Eliminar Autoplay de Vídeo.</li>
-                                <li>3. Estabilització Visual (Fixar CLS).</li>
-                            </ul>
+                            <h4 className="text-red-400 font-bold uppercase mb-2">Prioritat Crítica: Rendiment Web (WPO) i UX</h4>
+                            <div className="space-y-4">
+                                <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 className="text-white font-bold mb-1">1. Implementar "Edge Caching" per a Mòbils (Solució al TTFB 3,9s)</h5>
+                                    <p className="text-gray-400 text-sm mb-1"><strong>Acció:</strong> Configurar el servidor (o CDN tipus Cloudflare) per detectar l'User-Agent mòbil i servir una versió HTML estàtica de la web, evitant consultes a la base de dades.</p>
+                                    <p className="text-gray-400 text-sm"><strong>Objectiu:</strong> Reduir el TTFB de 3,9s a &lt;0,8s. Vital per reduir el CPC de les campanyes SEM.</p>
+                                </div>
+                                <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 className="text-white font-bold mb-1">2. Correcció d'Implementació de Vídeo (Eliminar Autoplay)</h5>
+                                    <p className="text-gray-400 text-sm mb-1"><strong>Acció:</strong> Eliminar l'atribut autoplay de tots els vídeos de fitxa de vehicle.</p>
+                                    <p className="text-gray-400 text-sm"><strong>Objectiu:</strong> Alliberar l'ample de banda mòbil per millorar el Core Web Vitals (LCP) i tenir mètriques d'interès reals.</p>
+                                </div>
+                                <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 className="text-white font-bold mb-1">3. Estabilització Visual (Fixar CLS)</h5>
+                                    <p className="text-gray-400 text-sm mb-1"><strong>Acció:</strong> Afegir la propietat CSS aspect-ratio a totes les imatges i definir min-height als contenidors de bàners.</p>
+                                    <p className="text-gray-400 text-sm"><strong>Objectiu:</strong> Passar de 0,9 a 0,1 en CLS.</p>
+                                </div>
+                            </div>
                         </div>
+
                         <div className="border-l-4 border-yellow-500 pl-4 py-2">
-                            <h4 className="text-yellow-400 font-bold uppercase mb-2">Prioritat Alta: Negoci</h4>
-                            <ul className="space-y-2 text-gray-300 text-sm">
-                                <li>4. Optimització Snippets Foton/DFSK.</li>
-                                <li>5. Monetització Blog (Widget Taller).</li>
-                                <li>6. Segmentació Local GBP Badalona.</li>
-                            </ul>
+                            <h4 className="text-yellow-400 font-bold uppercase mb-2">Prioritat Alta: Oportunitats de Negoci</h4>
+                            <div className="space-y-4">
+                                <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 className="text-white font-bold mb-1">4. Optimització de Snippets per a Marques Xineses (Foton/DFSK)</h5>
+                                    <p className="text-gray-400 text-sm mb-1"><strong>Acció:</strong> Reescriure els Meta Titles i Descriptions de les pàgines de Foton i DFSK (GSC files 13, 14, 19).</p>
+                                    <p className="text-gray-400 text-sm"><strong>Objectiu:</strong> Capturar el tràfic massiu d'impressions (25k+) que ja tenim però que no clica.</p>
+                                </div>
+                                <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 className="text-white font-bold mb-1">5. Monetització del Blog (Widget de Taller)</h5>
+                                    <p className="text-gray-400 text-sm mb-1"><strong>Acció:</strong> Inserir un mòdul flotant ("Sticky") de Cita Prèvia als posts de "Oli", "Corretja" i "Pneumàtics".</p>
+                                    <p className="text-gray-400 text-sm"><strong>Objectiu:</strong> Convertir lectors informatius en clients de postvenda.</p>
+                                </div>
+                                <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 className="text-white font-bold mb-1">6. Segmentació Local a GBP (Google Business Profile) Badalona</h5>
+                                    <p className="text-gray-400 text-sm mb-1"><strong>Acció:</strong> Verificar fitxa específica "Drivim Taller Oficial".</p>
+                                    <p className="text-gray-400 text-sm"><strong>Objectiu:</strong> Capturar cerques específiques de taller.</p>
+                                </div>
+                            </div>
                         </div>
+
                         <div className="border-l-4 border-blue-500 pl-4 py-2">
                             <h4 className="text-blue-400 font-bold uppercase mb-2">Prioritat Mitjana: Manteniment</h4>
-                            <ul className="space-y-2 text-gray-300 text-sm">
-                                <li>7. Monitorització Fricció Formulari (gap 8%).</li>
-                                <li>8. Revisió UX Bookcar.</li>
-                            </ul>
+                            <div className="space-y-4">
+                                <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 className="text-white font-bold mb-1">7. Monitorització de la Fricció de Formulari (El 8% restant)</h5>
+                                    <p className="text-gray-400 text-sm mb-1"><strong>Acció:</strong> Revisar els missatges d'error de validació en mòbil per assegurar que són clars i reduir aquest petit gap del 8%.</p>
+                                </div>
+                                <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+                                    <h5 className="text-white font-bold mb-1">8. Revisió UX (User Experience) de Pàgines Bookcar (Lloguer)</h5>
+                                    <p className="text-gray-400 text-sm mb-1"><strong>Acció:</strong> Auditar per què l'estada mitjana és de &lt;46s a les pàgines de lloguer.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </SectionCard>
@@ -667,10 +712,9 @@
                 { id: 'cro', title: '3. Conversió i Integritat', icon: <BarChart2 size={20} />, color: 'text-emerald-400' },
                 { id: 'content', title: '4. Continguts i SEO', icon: <Globe size={20} />, color: 'text-amber-400' },
                 { id: 'acquisition', title: '5. Adquisició', icon: <Users size={20} />, color: 'text-orange-400' },
-                { id: 'integrity', title: '6. Detall Integritat GA4', icon: <Lock size={20} />, color: 'text-rose-400' },
-                { id: 'external', title: '7. Auditoria Externa', icon: <Search size={20} />, color: 'text-cyan-400' },
-                { id: 'strategy', title: '8. Extensió Estratègica', icon: <Zap size={20} />, color: 'text-fuchsia-400' },
-                { id: 'roadmap', title: '9. Pla d\'Execució', icon: <Target size={20} />, color: 'text-indigo-400' },
+                // Section 6 merged into 3, renumbering remaining
+                { id: 'external', title: '6. Auditoria Externa', icon: <Search size={20} />, color: 'text-cyan-400' },
+                { id: 'roadmap', title: '7. Pla d\'Execució', icon: <Target size={20} />, color: 'text-indigo-400' },
             ];
 
             return (
@@ -732,9 +776,7 @@
                                 {activeSection === 'cro' && <CroAudit />}
                                 {activeSection === 'content' && <ContentSeo />}
                                 {activeSection === 'acquisition' && <AcquisitionAudit />}
-                                {activeSection === 'integrity' && <DataIntegrity />}
                                 {activeSection === 'external' && <ExternalAudit />}
-                                {activeSection === 'strategy' && <Section8Strategy />}
                                 {activeSection === 'roadmap' && <Roadmap />}
                             </div>
                         </main>
