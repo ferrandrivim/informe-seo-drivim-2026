@@ -1,537 +1,154 @@
 import React, { useState } from 'react';
-import { Menu, X, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, BarChart2, Server, Smartphone, Globe, Lock, Activity } from 'lucide-react';
+import { 
+  Menu, X, ChevronDown, ChevronUp, 
+  AlertTriangle, CheckCircle, BarChart2, 
+  Server, Globe, Lock, Activity, 
+  FileText, Search, Users, ExternalLink,
+  Target, Layers, Zap, Smartphone // Added missing Smartphone import
+} from 'lucide-react';
 
-const DrivimAuditApp = () => {
-  const [activeSection, setActiveSection] = useState('executive');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+// --- DATA CONSTANTS (FULL DATA FROM REPORT) ---
 
-  const sections = [
-    { id: 'executive', title: '1. Diagnòstic Executiu', icon: <Activity size={20} /> },
-    { id: 'technical', title: '2. Auditoria Tècnica (WPO)', icon: <Server size={20} /> },
-    { id: 'cro', title: '3. Conversió i Dades (CRO)', icon: <BarChart2 size={20} /> },
-    { id: 'content', title: '4. Continguts i SEO On-Page', icon: <Globe size={20} /> },
-    { id: 'acquisition', title: '5. Adquisició i Tràfic', icon: <Activity size={20} /> },
-    { id: 'integrity', title: '6. Integritat de Dades (GA4)', icon: <Lock size={20} /> },
-    { id: 'external', title: '7. Auditoria Externa i Benchmarking', icon: <Globe size={20} /> },
-    { id: 'strategy', title: '8. Extensió Estratègica (Fase 2)', icon: <Activity size={20} /> },
-    { id: 'roadmap', title: '9. Llistat d\'Execució', icon: <CheckCircle size={20} /> },
-  ];
+const SECTION_1_RISK_TABLE = [
+  {
+    area: "Rendiment Tècnic (WPO - Web Performance Optimization)",
+    status: "CRÍTIC",
+    impact: "Pèrdua estimada del 30% del pressupost SEM (Search Engine Marketing)",
+    diagnosis: "TTFB (Time To First Byte) Mòbil de 3,9s. Això implica que 1 de cada 3 clics pagats abandona abans que el servidor respongui. Estem subvencionant tràfic fantasma."
+  },
+  {
+    area: "Estabilitat Visual (UX - User Experience)",
+    status: "CRÍTIC",
+    impact: "Penalització SEO (Search Engine Optimization) i Baixa Confiança",
+    diagnosis: "CLS (Cumulative Layout Shift) Escriptori 0,9. El 90% de la pantalla es mou durant la càrrega. Això frustra l'usuari i Google ho penalitza baixant el rànquing orgànic."
+  },
+  {
+    area: "Integritat de Dades",
+    status: "CORRECTE",
+    impact: "Fiabilitat en la Presa de Decisions",
+    diagnosis: "Coherència del 91,7% (9.061 intents vs 8.306 leads totals validats). El sistema mesura correctament. La petita diferència del 8,3% entra dins dels marges normals d'errors de validació d'usuari (camps incorrectes). Podem confiar en les dades per optimitzar campanyes."
+  },
+  {
+    area: "Qualitat de Tràfic",
+    status: "ALERTA",
+    impact: "Baix ROAS (Return On Ad Spend) Orgànic",
+    diagnosis: "Excés de tràfic \"Low Intent\". El blog capta milers de visites que consumeixen recursos de servidor però no generen negoci (Cita Taller) per manca de passarel·les de conversió."
+  }
+];
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+const LANDING_PAGES_DATA = [
+  { id: 1, url: '/', clicks: '12.917', percent: '14,44%', time: '3m 09s', cat: 'Marca', diag: 'Bon temps de retenció, actua com a distribuïdor.' },
+  { id: 2, url: '/blog/que-pasa-si-no-cambio-el-aceite...', clicks: '11.490', percent: '12,85%', time: '54s', cat: 'Blog', diag: 'Tràfic desaprofitat. Alt volum, baixa retenció. Necessita widget de Taller.' },
+  { id: 3, url: '/blog/cuando-cambiar-la-correa...', clicks: '4.236', percent: '4,74%', time: '50s', cat: 'Blog', diag: 'Idem anterior. Oportunitat clara de venda creuada de manteniment.' },
+  { id: 4, url: '/blog/actualizar-navidrive-citroen/', clicks: '3.495', percent: '3,91%', time: '1m 03s', cat: 'Suport', diag: 'Usuari fidelitzat (ja té cotxe). Oportunitat de pla Renove?' },
+  { id: 5, url: '/blog/ruta-en-coche-por-el-delta...', clicks: '3.030', percent: '3,39%', time: '1m 25s', cat: 'Viatges', diag: 'Objectiu Bookcar. Aquest usuari vol viatjar. Cal oferir lloguer.' },
+  { id: 6, url: '/coches-km-0/', clicks: '2.268', percent: '2,54%', time: '1m 15s', cat: 'VO', diag: 'Primer URL transaccional. Volum baix comparat amb el blog.' },
+  { id: 7, url: '/coches-foton/tunland-g7/', clicks: '1.843', percent: '2,06%', time: '1m 11s', cat: 'Nou', diag: 'Producte Estrella. Supera a models clàssics. Cal millorar la fitxa per pujar el temps.' },
+  { id: 8, url: '/concesionarios/citroen-badalona/', clicks: '1.751', percent: '1,96%', time: '2m 40s', cat: 'Local', diag: 'Molt bon rendiment. L\'usuari local està molt interessat.' },
+  { id: 9, url: '/concesionarios/citroen-barcelona/', clicks: '1.579', percent: '1,77%', time: '1m 58s', cat: 'Local', diag: 'Correcte, però inferior a Badalona.' },
+  { id: 10, url: '/concesionarios/taller-citroen-badalona/', clicks: '1.436', percent: '1,61%', time: '1m 33s', cat: 'Taller', diag: 'Tràfic "calent" per a postvenda.' },
+  { id: 11, url: '/coches-para-taxi/', clicks: '1.246', percent: '1,39%', time: '54s', cat: 'Nínxol', diag: 'Alerta. Temps molt baix per a una compra B2B complexa. Falta estoc visible?' },
+  { id: 12, url: '/concesionarios/peugeot-barcelona/', clicks: '1.238', percent: '1,38%', time: '1m 38s', cat: 'Local', diag: 'Rendiment estàndard.' },
+  { id: 13, url: '/concesionarios/taller...maquinista/', clicks: '1.223', percent: '1,37%', time: '1m 59s', cat: 'Taller', diag: 'Bon temps de retenció.' },
+  { id: 14, url: '/blog/como-activar-los-servicios...', clicks: '1.000', percent: '1,12%', time: '59s', cat: 'Suport', diag: 'Tràfic de suport tècnic.' },
+  { id: 15, url: '/renting-particulares/', clicks: '974', percent: '1,09%', time: '1m 15s', cat: 'Renting', diag: 'Volum baix per ser un producte de moda. Cal revisar l\'oferta.' },
+  { id: 16, url: '/concesionarios/bookcar-badalona/', clicks: '954', percent: '1,07%', time: '46s', cat: 'Rent', diag: 'Crític (UX). L\'usuari marxa molt ràpid. Problema de preus o Experiència d\'Usuari de reserva?' },
+  { id: 17, url: '/motos-km-0/', clicks: '939', percent: '1,05%', time: '1m 07s', cat: 'Motos', diag: 'Nínxol complementari interessant.' },
+  { id: 18, url: '/comprar-coche-electrico/ofertas...', clicks: '911', percent: '1,02%', time: '1m 21s', cat: 'Nou', diag: 'Tràfic qualificat per a elèctrics.' },
+  { id: 19, url: '/blog/la-presion-de-los-neumaticos...', clicks: '876', percent: '0,98%', time: '47s', cat: 'Blog', diag: 'Una altra URL informativa sense monetitzar.' },
+  { id: 20, url: '/motos-piaggio/zip/', clicks: '821', percent: '0,92%', time: '34s', cat: 'Motos', diag: 'Temps de permanència extremadament baix.' },
+  { id: 21, url: '/financiacion-multiopcion/', clicks: '801', percent: '0,90%', time: '1m 48s', cat: 'Serveis', diag: 'L\'usuari llegeix les condicions (bon senyal).' },
+  { id: 22, url: '/coches-citroen/jumpy-combi/', clicks: '794', percent: '0,89%', time: '53s', cat: 'Nou', diag: 'Professional/Industrial. Temps millorable.' },
+  { id: 23, url: '/coches-foton/tunland-v9/', clicks: '772', percent: '0,86%', time: '1m 23s', cat: 'Nou', diag: 'Interès creixent en la gamma alta de Foton.' },
+  { id: 24, url: '/ofertas-comerciales/', clicks: '717', percent: '0,80%', time: '1m 11s', cat: 'Promo', diag: 'Pàgina agregadora d\'ofertes.' },
+  { id: 25, url: '/concesionarios/bookcar-mataro/', clicks: '663', percent: '0,74%', time: '39s', cat: 'Rent', diag: 'Crític. Mateix patró que Badalona (#16). El vertical de lloguer té problemes.' },
+  { id: 26, url: '/coches-subaru/', clicks: '618', percent: '0,69%', time: '2m 44s', cat: 'Nou', diag: 'Molt bon engagement per a una marca de nínxol.' },
+];
 
+const SEARCH_QUERIES_DATA = [
+  { id: 1, query: 'drivim', clicks: '5.335', impr: '17.082', ctr: '31,23%', pos: '1,68' },
+  { id: 2, query: 'drivim badalona', clicks: '1.616', impr: '10.185', ctr: '15,87%', pos: '1,47' },
+  { id: 3, query: 'drivim barcelona', clicks: '673', impr: '3.459', ctr: '19,46%', pos: '1,20' },
+  { id: 4, query: 'ruta en coche por el delta del ebro', clicks: '643', impr: '1.514', ctr: '42,47%', pos: '1,11' },
+  { id: 5, query: 'driving badalona', clicks: '561', impr: '3.115', ctr: '18,01%', pos: '1,04' },
+  { id: 6, query: 'drivin', clicks: '500', impr: '2.581', ctr: '19,37%', pos: '5,04' },
+  { id: 7, query: 'citroen badalona', clicks: '446', impr: '3.420', ctr: '13,04%', pos: '1,77' },
+  { id: 8, query: 'drivim badalona taller', clicks: '370', impr: '2.900', ctr: '12,76%', pos: '1,05' },
+  { id: 9, query: 'citroen jumpy', clicks: '289', impr: '51.301', ctr: '0,56%', pos: '6,88' },
+  { id: 10, query: 'subaru badalona', clicks: '281', impr: '1.499', ctr: '18,75%', pos: '1,35' },
+  { id: 11, query: 'coches de gerencia', clicks: '273', impr: '6.547', ctr: '4,17%', pos: '5,09' },
+  { id: 12, query: 'coches km 0', clicks: '223', impr: '15.830', ctr: '1,41%', pos: '17,11' },
+  { id: 13, query: 'dfsk e5', clicks: '223', impr: '25.256', ctr: '0,88%', pos: '8,27' },
+  { id: 14, query: 'foton tunland g7', clicks: '223', impr: '15.651', ctr: '1,42%', pos: '6,47' },
+  { id: 15, query: 'liquidación coches km 0', clicks: '222', impr: '14.782', ctr: '1,5%', pos: '9,45' },
+  { id: 16, query: 'citroen la maquinista', clicks: '203', impr: '1.419', ctr: '14,31%', pos: '1,63' },
+  { id: 17, query: 'drivim motos', clicks: '195', impr: '909', ctr: '21,45%', pos: '1,67' },
+  { id: 18, query: 'drivim renting', clicks: '195', impr: '601', ctr: '32,45%', pos: '1,35' },
+  { id: 19, query: 'dfsk 600', clicks: '193', impr: '11.469', ctr: '1,68%', pos: '6,57' },
+  { id: 20, query: 'spoticar badalona', clicks: '184', impr: '1.502', ctr: '12,25%', pos: '2,11' },
+  { id: 21, query: 'renting particulares', clicks: '174', impr: '29.136', ctr: '0,6%', pos: '21,61' },
+  { id: 22, query: 'citroen barcelona', clicks: '159', impr: '3.059', ctr: '5,2%', pos: '2,01' },
+  { id: 23, query: 'alquiler coche badalona', clicks: '145', impr: '5.936', ctr: '2,44%', pos: '7,00' },
+  { id: 24, query: 'coches segunda mano badalona', clicks: '144', impr: '3.987', ctr: '3,61%', pos: '5,57' },
+  { id: 25, query: 'taller citroen badalona', clicks: '137', impr: '1.487', ctr: '9,21%', pos: '1,26' },
+];
+
+const BENCHMARKING_DATA = [
+  { comp: 'DRIVIM', speed: 'Crítica', speedColor: 'red', struct: 'Inestable', structColor: 'yellow', local: 'Excel·lent', localColor: 'green', stack: 'WordPress', threat: 'N/A' },
+  { comp: 'Quadis', speed: 'Alta', speedColor: 'green', struct: 'Sòlida', structColor: 'green', local: 'Molt Alta', localColor: 'green', stack: '.NET Enterprise', threat: 'Autoritat de Domini (DR) massiva que acapara termes genèrics.' },
+  { comp: 'M-Automoció', speed: 'Mitjana', speedColor: 'yellow', struct: 'Bona', structColor: 'green', local: 'Alta', localColor: 'green', stack: 'CMS a mida', threat: 'SEO Local a Barcelona. Competència directa en marques compartides.' },
+  { comp: 'Grup Maas', speed: 'Baixa', speedColor: 'red', struct: 'Confusa', structColor: 'red', local: 'Mitjana', localColor: 'yellow', stack: 'Legacy / Mixt', threat: 'Guerra de Preus (VO). Competeixen per preu, no per experiència digital.' },
+  { comp: 'Vallescar', speed: 'Mitjana', speedColor: 'yellow', struct: 'Mitjana', structColor: 'yellow', local: 'Alta', localColor: 'green', stack: 'WordPress', threat: 'Domini Regional. Rival directe per tecnologia i territori veí.' },
+];
+
+const INTEGRITY_DATA = [
+  { concept: 'A. INTENCIÓ DE CONTACTE', events: 'form_submit', volume: '9.061' },
+  { concept: 'B. LEADS CONFIRMATS (ÈXIT)', events: 'drivim_lead (2.971) + Lead (1.606) + Lead_Financiacion_Lineal (1.386) + Lead_Cita_Previa_Taller (1.283) + Lead_Alternativa (804) + Lead_Financiacion_Motos (256)', volume: '8.306' },
+];
+
+// --- COMPONENTS ---
+
+const StatusBadge = ({ status }) => {
+  const styles = {
+    CRÍTIC: "bg-red-900 text-red-200 border-red-700",
+    ALERTA: "bg-yellow-900 text-yellow-200 border-yellow-700",
+    CORRECTE: "bg-green-900 text-green-200 border-green-700",
+  };
   return (
-    <div className="flex h-screen bg-gray-900 text-gray-100 font-sans overflow-hidden">
-      {/* Sidebar */}
-      <div 
-        className={`${isSidebarOpen ? 'w-80' : 'w-20'} bg-gray-800 border-r border-gray-700 transition-all duration-300 flex flex-col`}
+    <span className={`px-2 py-1 rounded text-xs font-bold border ${styles[status] || "bg-gray-700"}`}>
+      {status}
+    </span>
+  );
+};
+
+const SectionCard = ({ title, children, className = "" }) => (
+  <div className={`bg-gray-800 rounded-lg border border-gray-700 shadow-sm p-6 mb-6 ${className}`}>
+    <h3 className="text-xl font-bold text-blue-400 mb-4 border-b border-gray-700 pb-2">{title}</h3>
+    {children}
+  </div>
+);
+
+const AccordionItem = ({ title, children, defaultOpen = false }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-gray-700 rounded-lg mb-3 overflow-hidden">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex justify-between items-center p-4 bg-gray-750 hover:bg-gray-700 transition-colors text-left"
       >
-        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-          {isSidebarOpen && <h1 className="font-bold text-xl text-blue-400">Auditoria Drivim</h1>}
-          <button onClick={toggleSidebar} className="p-2 hover:bg-gray-700 rounded-lg">
-            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+        <span className="font-semibold text-gray-200">{title}</span>
+        {isOpen ? <ChevronUp size={18} className="text-blue-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+      </button>
+      {isOpen && (
+        <div className="p-4 bg-gray-800 border-t border-gray-700 text-gray-300 text-sm leading-relaxed">
+          {children}
         </div>
-        <nav className="flex-1 overflow-y-auto p-2">
-          {sections.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => setActiveSection(section.id)}
-              className={`w-full flex items-center p-3 mb-1 rounded-lg transition-colors ${
-                activeSection === section.id 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 
-                  : 'hover:bg-gray-700 text-gray-300'
-              }`}
-            >
-              <span className="mr-3">{section.icon}</span>
-              {isSidebarOpen && <span className="text-sm font-medium text-left">{section.title}</span>}
-            </button>
-          ))}
-        </nav>
-        <div className="p-4 border-t border-gray-700 text-xs text-gray-500">
-          {isSidebarOpen && (
-            <div>
-              <p>Confidencial</p>
-              <p>Gener 2026</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Header */}
-        <header className="bg-gray-800 border-b border-gray-700 p-6 shadow-md z-10">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Auditoria Estratègica 360º</h2>
-              <p className="text-gray-400 text-sm mt-1">Anàlisi Forense de Dades Integrals - Drivim 2025</p>
-            </div>
-            <div className="bg-red-500/20 text-red-300 px-3 py-1 rounded-full text-xs font-bold border border-red-500/50">
-              DOCUMENT CONFIDENCIAL
-            </div>
-          </div>
-        </header>
-
-        {/* Scrollable Content Area */}
-        <main className="flex-1 overflow-y-auto p-8 bg-gray-900 scroll-smooth">
-          <div className="max-w-6xl mx-auto space-y-12 pb-20">
-            {activeSection === 'executive' && <Section1Executive />}
-            {activeSection === 'technical' && <Section2Technical />}
-            {activeSection === 'cro' && <Section3CRO />}
-            {activeSection === 'content' && <Section4Content />}
-            {activeSection === 'acquisition' && <Section5Acquisition />}
-            {activeSection === 'integrity' && <Section6Integrity />}
-            {activeSection === 'external' && <Section7External />}
-            {activeSection === 'strategy' && <Section8Strategy />}
-            {activeSection === 'roadmap' && <Section9Roadmap />}
-          </div>
-        </main>
-      </div>
+      )}
     </div>
   );
 };
 
-/* --- COMPONENTS DE SECCIÓ --- */
-
-const Section1Executive = () => (
-  <div className="space-y-8 animate-fadeIn">
-    <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-      <h3 className="text-2xl font-bold text-blue-400 mb-4 border-b border-gray-700 pb-2">1. Diagnòstic Executiu: Estat d'Emergència Digital</h3>
-      
-      <div className="prose prose-invert max-w-none">
-        <h4 className="text-lg font-semibold text-white mt-4">La Tesi Principal: Fractura Estructural i Cost d'Oportunitat</h4>
-        <p className="text-gray-300 leading-relaxed">
-          El web de Drivim, en el seu estat actual (Gener 2026), pateix una <strong>fractura estructural crítica</strong> que compromet la viabilitat de les inversions digitals. Tot i mantenir uns volums de tràfic aparentment saludables a la part superior de l'embut (Top of Funnel), la infraestructura tècnica i l'arquitectura de dades estan sabotejant activament tant la inversió publicitària (Paid Media) com la capacitat de conversió del tràfic orgànic.
-        </p>
-        <p className="text-gray-300 leading-relaxed mt-4">
-          Estem operant sota el paradigma d'una <strong>ineficiència estructural crítica</strong>: mentre s'injecta pressupost agressivament en captació (amb un 39% de tràfic provinent de pagament), el temps de resposta excessiu del servidor en dispositius mòbils (3,9 segons) provoca que els usuaris abandonin la pàgina abans que aquesta arribi a mostrar cap contingut. Paral·lelament, l'entorn d'escriptori registra un moviment acumulatiu de layout (CLS - Cumulative Layout Shift) de 0,9, desplaçant la gran majoria dels elements visibles durant el procés de càrrega.
-        </p>
-        <p className="text-gray-300 leading-relaxed mt-4">
-          A diferència del diagnòstic inicial, <strong>l'anàlisi agregada de conversió confirma que la integritat de les dades és robusta</strong>: la suma de tots els esdeveniments de lead específics (Venda, Taller, Finançament) coincideix en un <strong>91,7%</strong> amb els intents d'enviament de formulari (<code>form_submit</code>). Això descarta l'error de mesurament crític, però posa encara més pressió sobre la necessitat de resoldre els problemes de velocitat (WPO) i UX, que són ara els únics culpables del baix rendiment del negoci.
-        </p>
-      </div>
-    </div>
-
-    <div className="grid grid-cols-1 gap-6">
-      <h4 className="text-xl font-bold text-white">Tauler de Risc Ampliat (KPIs Crítics)</h4>
-      <div className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700">
-        <table className="w-full text-left text-sm text-gray-400">
-          <thead className="bg-gray-700 text-gray-200 uppercase font-medium">
-            <tr>
-              <th className="px-6 py-4">Àrea</th>
-              <th className="px-6 py-4 text-center">Estat</th>
-              <th className="px-6 py-4">Impacte Negoci Directe</th>
-              <th className="px-6 py-4">Diagnòstic Ràpid i Conseqüència</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-700">
-            <tr className="hover:bg-gray-750 transition-colors">
-              <td className="px-6 py-4 font-medium text-white">Rendiment Tècnic (WPO)</td>
-              <td className="px-6 py-4 text-center"><StatusBadge status="critical" /></td>
-              <td className="px-6 py-4 text-red-300">Pèrdua estimada del 30% del pressupost SEM</td>
-              <td className="px-6 py-4"><strong>TTFB Mòbil de 3,9s.</strong> Això implica que 1 de cada 3 clics pagats abandona abans que el servidor respongui. Estem subvencionant tràfic fantasma.</td>
-            </tr>
-            <tr className="hover:bg-gray-750 transition-colors">
-              <td className="px-6 py-4 font-medium text-white">Estabilitat Visual (UX)</td>
-              <td className="px-6 py-4 text-center"><StatusBadge status="critical" /></td>
-              <td className="px-6 py-4 text-red-300">Penalització SEO i Baixa Confiança</td>
-              <td className="px-6 py-4"><strong>CLS Escriptori 0,9.</strong> El 90% de la pantalla es mou durant la càrrega. Això frustra l'usuari i Google ho penalitza baixant el rànquing orgànic.</td>
-            </tr>
-            <tr className="hover:bg-gray-750 transition-colors">
-              <td className="px-6 py-4 font-medium text-white">Integritat de Dades</td>
-              <td className="px-6 py-4 text-center"><StatusBadge status="correct" /></td>
-              <td className="px-6 py-4 text-green-300">Fiabilitat en la Presa de Decisions</td>
-              <td className="px-6 py-4"><strong>Coherència del 91,7%</strong> (9.061 intents vs 8.306 leads totals validats). El sistema mesura correctament. La petita diferència del 8,3% entra dins dels marges normals d'errors de validació d'usuari (camps incorrectes).</td>
-            </tr>
-            <tr className="hover:bg-gray-750 transition-colors">
-              <td className="px-6 py-4 font-medium text-white">Qualitat de Tràfic</td>
-              <td className="px-6 py-4 text-center"><StatusBadge status="alert" /></td>
-              <td className="px-6 py-4 text-yellow-300">Baix ROAS Orgànic</td>
-              <td className="px-6 py-4"><strong>Excés de tràfic "Low Intent".</strong> El blog capta milers de visites que consumeixen recursos de servidor però no generen negoci (Cita Taller) per manca de passarel·les de conversió.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-);
-
-const Section2Technical = () => (
-  <div className="space-y-8 animate-fadeIn">
-    <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-      <h3 className="text-2xl font-bold text-blue-400 mb-6 border-b border-gray-700 pb-2">2. Auditoria Tècnica Forense (Infraestructura i WPO)</h3>
-      <p className="text-sm text-gray-400 mb-6 italic">Anàlisi creuada detallada de les captures de Core Web Vitals (Mètriques Web Principals: Mòbil vs Escriptori) per identificar l'arrel del problema.</p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <Card title="2.1. El Col·lapse del Canal Mòbil" status="critical">
-          <div className="space-y-3 text-gray-300">
-            <p><strong>L'Evidència:</strong> TTFB (Time To First Byte) de <span className="text-red-400 font-bold">3,9 segons</span>.</p>
-            <p><strong>Anàlisi Forense:</strong> Aquesta mètrica aïlla estrictament el rendiment del servidor (Backend). Quan un usuari fa clic a un anunci, la pantalla es queda "congelada" durant gairebé 4 segons.</p>
-            <p><strong>La Paradoxa:</strong> A l'escriptori, el TTFB és d'1,5s. La diferència confirma un problema de <strong>configuració deficient de la Caché</strong> per a dispositius mòbils (no es serveix HTML estàtic).</p>
-            <p className="border-l-4 border-red-500 pl-3 mt-2 bg-red-500/10 py-2"><strong>Impacte Econòmic:</strong> Rebot Zero. Estem pagant clics que marxen abans de carregar.</p>
-          </div>
-        </Card>
-
-        <Card title="2.2. Inestabilitat Visual (CLS) en Escriptori" status="critical">
-          <div className="space-y-3 text-gray-300">
-            <p><strong>L'Evidència:</strong> CLS (Cumulative Layout Shift) de <span className="text-red-400 font-bold">0,9</span>.</p>
-            <p><strong>El Fet Tècnic:</strong> El 90% de l'estructura visual es desplaça després de pintar-se. Localitzat quirúrgicament a la <strong>Homepage i Landing Pages de Model</strong>.</p>
-            <p><strong>Causa Arrel:</strong> El <strong>Slider Principal (Carrusel)</strong> i les capçaleres s'injecten sense reservar espai al CSS.</p>
-            <p className="border-l-4 border-red-500 pl-3 mt-2 bg-red-500/10 py-2"><strong>Solució Obligatòria:</strong> Implementar <code>aspect-ratio</code> o <code>min-height</code> al CSS.</p>
-          </div>
-        </Card>
-      </div>
-
-      <div className="bg-gray-750 p-5 rounded-lg border border-gray-600">
-        <h4 className="text-lg font-semibold text-white mb-3 flex items-center"><Server className="mr-2 text-blue-400"/> 2.3. Enginyeria de Dades WordPress (Causa Arrel)</h4>
-        <div className="text-gray-300 space-y-2">
-          <p><strong>Diagnòstic Tècnic:</strong> L'auditoria externa confirma que la web opera sobre <strong>WordPress</strong>. El TTFB alt és causat per l'acumulació de dades "escombraries" a la taula <code>wp_options</code> i la càrrega excessiva de plugins.</p>
-          <ul className="list-disc pl-5 space-y-1 mt-2 text-gray-400">
-            <li><strong>Neteja de Transients:</strong> Eliminar registres temporals caducats de la base de dades.</li>
-            <li><strong>Auditoria de Plugins:</strong> Utilitzar <em>Query Monitor</em> per trobar el plugin que bloqueja (backups, xat antic, constructor visual).</li>
-            <li><strong>Implementació de Redis:</strong> Activar <em>Object Caching</em> per servir des de la memòria RAM (0,5s) en lloc de disc (3s).</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const Section3CRO = () => (
-  <div className="space-y-8 animate-fadeIn">
-    <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-      <h3 className="text-2xl font-bold text-blue-400 mb-6 border-b border-gray-700 pb-2">3. Auditoria de Conversió i Integritat de Dades (CRO)</h3>
-      
-      <div className="bg-gray-900 rounded-lg p-6 border border-gray-700 mb-6">
-        <h4 className="text-xl font-bold text-white mb-4">3.1. Validació de Coherència del Funnel (Dades Correctes)</h4>
-        <p className="text-gray-300 mb-4">Reanalitzant l'estructura sota la premissa que <code>form_submit</code> (intent) ha de ser equivalent a la suma agregada de tots els tipus de "Lead" (èxit):</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mb-6">
-          <div className="bg-gray-800 p-4 rounded-lg">
-            <p className="text-gray-400 text-sm uppercase">Total Intents</p>
-            <p className="text-3xl font-bold text-white">9.061</p>
-            <p className="text-xs text-gray-500">form_submit</p>
-          </div>
-          <div className="bg-gray-800 p-4 rounded-lg border-2 border-green-500/30">
-            <p className="text-gray-400 text-sm uppercase">Total Èxits</p>
-            <p className="text-3xl font-bold text-green-400">8.306</p>
-            <p className="text-xs text-gray-500">Suma 6 tipus de Leads</p>
-          </div>
-          <div className="bg-gray-800 p-4 rounded-lg">
-            <p className="text-gray-400 text-sm uppercase">Coherència</p>
-            <p className="text-3xl font-bold text-blue-400">91,7%</p>
-            <p className="text-xs text-gray-500">Gap: 755 (8,3%)</p>
-          </div>
-        </div>
-
-        <div className="bg-green-500/10 border border-green-500/30 p-4 rounded-lg">
-          <p className="text-green-300 font-medium flex items-center">
-            <CheckCircle size={18} className="mr-2" />
-            Conclusió Tècnica:
-          </p>
-          <p className="text-gray-300 mt-1">
-            <strong>El tracking funciona correctament.</strong> No hi ha forat negre. El 8,3% restant és fricció estàndard de validació d'usuari (DNI incorrecte, camps buits). Els esforços han d'anar a WPO, no a arreglar el mesurament.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const Section4Content = () => {
-  const landingPages = [
-    { id: 1, url: '/', clicks: '12.917', percent: '14,44%', time: '3m 09s', cat: 'Marca', diag: 'Bon temps, distribuïdor.' },
-    { id: 2, url: '/blog/que-pasa-si-no-cambio-el-aceite...', clicks: '11.490', percent: '12,85%', time: '54s', cat: 'Blog', diag: 'Tràfic desaprofitat. Falta widget Taller.' },
-    { id: 3, url: '/blog/cuando-cambiar-la-correa...', clicks: '4.236', percent: '4,74%', time: '50s', cat: 'Blog', diag: 'Oportunitat venda creuada manteniment.' },
-    { id: 7, url: '/coches-foton/tunland-g7/', clicks: '1.843', percent: '2,06%', time: '1m 11s', cat: 'Nou', diag: 'Producte Estrella. Cal millorar fitxa.' },
-    { id: 11, url: '/coches-para-taxi/', clicks: '1.246', percent: '1,39%', time: '54s', cat: 'Nínxol', diag: 'Alerta. Temps molt baix per B2B.' },
-    { id: 16, url: '/concesionarios/bookcar-badalona/', clicks: '954', percent: '1,07%', time: '46s', cat: 'Rent', diag: 'Crític (UX). Problema preus/reserva.' },
-  ];
-
-  return (
-    <div className="space-y-8 animate-fadeIn">
-      <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-        <h3 className="text-2xl font-bold text-blue-400 mb-6 border-b border-gray-700 pb-2">4. Auditoria d'Estratègia de Continguts i SEO (On-Page)</h3>
-        
-        <div className="mb-8">
-          <h4 className="text-lg font-bold text-white mb-4">4.1. Anàlisi Exhaustiva de Pàgines de Destinació (Mostra Representativa)</h4>
-          <div className="overflow-x-auto bg-gray-900 rounded-lg border border-gray-700">
-            <table className="w-full text-sm text-gray-300">
-              <thead className="bg-gray-800 text-gray-100 font-bold uppercase text-xs">
-                <tr>
-                  <th className="px-4 py-3 text-left">URL</th>
-                  <th className="px-4 py-3 text-right">Clics</th>
-                  <th className="px-4 py-3 text-right">% Tràfic</th>
-                  <th className="px-4 py-3 text-right">Temps</th>
-                  <th className="px-4 py-3 text-left">Categoria</th>
-                  <th className="px-4 py-3 text-left">Diagnòstic</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800">
-                {landingPages.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-800 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-blue-300 truncate max-w-xs" title={row.url}>{row.url}</td>
-                    <td className="px-4 py-3 text-right">{row.clicks}</td>
-                    <td className="px-4 py-3 text-right">{row.percent}</td>
-                    <td className={`px-4 py-3 text-right font-bold ${row.time.includes('s') && parseInt(row.time) < 60 ? 'text-red-400' : 'text-green-400'}`}>{row.time}</td>
-                    <td className="px-4 py-3"><span className="bg-gray-700 px-2 py-1 rounded text-xs">{row.cat}</span></td>
-                    <td className="px-4 py-3 text-xs">{row.diag}</td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan="6" className="px-4 py-2 text-center text-xs text-gray-500 italic bg-gray-800">...i 20 files més analitzades a l'informe complet...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Accordion title="4.1.1 Diagnòstic Forense" isOpenDefault={true}>
-            <ul className="list-disc pl-5 space-y-2 text-gray-300 text-sm">
-              <li><strong>Dominació 'Low Intent':</strong> Les URLs de Blog sumen 24.127 clics (27% del tràfic). Usuaris que volen "saber", no "comprar". Acció: Widgets de Taller dins l'article.</li>
-              <li><strong>Força Emergent Foton:</strong> Foton Tunland supera a models consolidats. Oportunitat en demanda insatisfeta de Pick-ups.</li>
-              <li><strong>Col·lapse Bookcar:</strong> Temps d'estada crítics (46s). Urgent revisar UX de reserva i visibilitat de preus.</li>
-            </ul>
-          </Accordion>
-
-          <Accordion title="4.1.2 Estratègia MoFu (Fase 2)" isOpenDefault={true}>
-            <div className="text-gray-300 text-sm space-y-2">
-              <p><strong>El Tresor:</strong> Milers de lectors de blog no llestos per comprar avui.</p>
-              <p><strong>Estratègia Nurturing:</strong> Implementar <strong>Lead Magnets</strong> (ex: "Checklist Manteniment" o "Guia Pneumàtics").</p>
-              <p><strong>Resultat:</strong> Capturar emails per entrar al <em>Top of Mind</em> via newsletter, generant confiança per quan necessitin el taller realment.</p>
-            </div>
-          </Accordion>
-        </div>
-
-        <div className="mt-8 pt-6 border-t border-gray-700">
-          <h4 className="text-lg font-bold text-white mb-2">4.2. Anàlisi de Consultes (GSC) - Keyword Gap</h4>
-          <p className="text-gray-400 mb-4">Competidors com Quadis acaparen termes "Long Tail" transaccionals (ex: "oferta peugeot 3008 km0").</p>
-          <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
-            <p className="text-blue-300 font-bold">Acció Estratègica:</p>
-            <p className="text-gray-300 text-sm mt-1">Crear <strong>"Hubs Transaccionals"</strong>: pàgines de categoria persistents optimitzades per a clusters semàntics (ex: [Model] + [KM0/Nou] + [Barcelona]), actuant com a xarxes d'arrossegament.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const Section5Acquisition = () => (
-  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg animate-fadeIn">
-    <h3 className="text-2xl font-bold text-blue-400 mb-6 border-b border-gray-700 pb-2">5. Auditoria d'Adquisició i Dependència</h3>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card title="5.1. Vulnerabilitat Financera en Paid Search" status="alert">
-        <p className="text-gray-300 text-sm mb-2"><strong>Dada:</strong> 39,37% del tràfic prové de Paid Search (209k sessions).</p>
-        <p className="text-gray-300 text-sm mb-2"><strong>Risc Ocult:</strong> Els Core Web Vitals deficients (WPO) baixen el <em>Quality Score</em>.</p>
-        <p className="text-gray-300 text-sm"><strong>Conseqüència:</strong> Estem pagant una "multa d'eficiència" a Google (CPC més car per la mateixa posició).</p>
-      </Card>
-      <Card title="5.2. Potencial Social Orgànic" status="correct">
-        <p className="text-gray-300 text-sm mb-2"><strong>Dada:</strong> 15,8% de tràfic orgànic social.</p>
-        <p className="text-gray-300 text-sm"><strong>Lectura:</strong> Comunitat fidel. Cal revisar on aterra aquest tràfic (Home vs Oferta específica) per millorar la conversió.</p>
-      </Card>
-    </div>
-  </div>
-);
-
-const Section6Integrity = () => (
-  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg animate-fadeIn space-y-6">
-    <h3 className="text-2xl font-bold text-blue-400 mb-6 border-b border-gray-700 pb-2">6. Integritat de Dades - Events GA4</h3>
-    
-    <div className="overflow-x-auto bg-gray-900 rounded-lg border border-gray-700">
-        <table className="w-full text-sm text-gray-300">
-            <thead className="bg-gray-800 text-gray-100 uppercase text-xs">
-                <tr>
-                    <th className="px-4 py-3 text-left">Concepte</th>
-                    <th className="px-4 py-3 text-left">Esdeveniments Inclosos</th>
-                    <th className="px-4 py-3 text-right">Volum Total</th>
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800">
-                <tr>
-                    <td className="px-4 py-3 font-bold text-white">A. INTENCIÓ</td>
-                    <td className="px-4 py-3 font-mono text-xs">form_submit</td>
-                    <td className="px-4 py-3 text-right font-bold">9.061</td>
-                </tr>
-                <tr>
-                    <td className="px-4 py-3 font-bold text-green-400">B. ÈXIT (LEADS)</td>
-                    <td className="px-4 py-3 font-mono text-xs text-gray-400">drivim_lead + Lead + Lead_Financiacion...</td>
-                    <td className="px-4 py-3 text-right font-bold text-green-400">8.306</td>
-                </tr>
-                <tr className="bg-gray-800/50">
-                    <td className="px-4 py-3 font-bold">GAP</td>
-                    <td className="px-4 py-3 text-xs italic">Diferència A - B</td>
-                    <td className="px-4 py-3 text-right">755</td>
-                </tr>
-                <tr className="bg-blue-900/20">
-                    <td className="px-4 py-3 font-bold text-blue-300">COHERÈNCIA</td>
-                    <td className="px-4 py-3"></td>
-                    <td className="px-4 py-3 text-right font-bold text-blue-300 text-lg">91,7%</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <p className="text-xs text-gray-500 italic">*Nota: Exclosos leads de Xat (Serviceform antic i Timbal actual).</p>
-
-    <div className="bg-red-900/20 border border-red-500/30 p-4 rounded-lg">
-        <h4 className="text-red-300 font-bold mb-2 flex items-center"><AlertTriangle size={18} className="mr-2"/> Fals Positiu: Consum de Vídeo</h4>
-        <p className="text-gray-300 text-sm">L'event <code>video_progress</code> té <strong>254.828</strong> registres. Això és un "miratge" causat per l'<strong>Autoplay</strong>.</p>
-        <p className="text-gray-300 text-sm mt-2"><strong>Conseqüència Devastadora:</strong> El vídeo en segon pla satura l'ample de banda mòbil, competint amb recursos crítics (CSS/JS) i causant directament el TTFB lent.</p>
-        <p className="text-white text-sm font-bold mt-2">Acció: Desactivar Autoplay immediatament.</p>
-    </div>
-  </div>
-);
-
-const Section7External = () => (
-  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg animate-fadeIn">
-    <h3 className="text-2xl font-bold text-blue-400 mb-6 border-b border-gray-700 pb-2">7. Auditoria Externa i Benchmarking (Dades Reals)</h3>
-    
-    <div className="overflow-x-auto bg-gray-900 rounded-lg border border-gray-700 mb-8">
-        <table className="w-full text-sm text-gray-300">
-            <thead className="bg-gray-800 text-gray-100 uppercase text-xs">
-                <tr>
-                    <th className="px-3 py-3 text-left">Competidor</th>
-                    <th className="px-3 py-3 text-center">Velocitat</th>
-                    <th className="px-3 py-3 text-center">Estructura</th>
-                    <th className="px-3 py-3 text-center">SEO Local</th>
-                    <th className="px-3 py-3 text-left">Stack</th>
-                    <th className="px-3 py-3 text-left">Amenaça</th>
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800">
-                <tr className="bg-blue-900/10">
-                    <td className="px-3 py-3 font-bold text-white">DRIVIM</td>
-                    <td className="px-3 py-3 text-center text-red-400 font-bold">Crítica</td>
-                    <td className="px-3 py-3 text-center text-yellow-400">Inestable</td>
-                    <td className="px-3 py-3 text-center text-green-400 font-bold">Excel·lent</td>
-                    <td className="px-3 py-3 text-xs">WordPress</td>
-                    <td className="px-3 py-3 text-xs">-</td>
-                </tr>
-                <tr>
-                    <td className="px-3 py-3 font-bold">Quadis</td>
-                    <td className="px-3 py-3 text-center text-green-400">Alta</td>
-                    <td className="px-3 py-3 text-center text-green-400">Sòlida</td>
-                    <td className="px-3 py-3 text-center text-green-400">Molt Alta</td>
-                    <td className="px-3 py-3 text-xs">.NET Enterprise</td>
-                    <td className="px-3 py-3 text-xs">Autoritat de Domini (DR) massiva.</td>
-                </tr>
-                <tr>
-                    <td className="px-3 py-3 font-bold">M-Automoció</td>
-                    <td className="px-3 py-3 text-center text-yellow-400">Mitjana</td>
-                    <td className="px-3 py-3 text-center text-green-400">Bona</td>
-                    <td className="px-3 py-3 text-center text-green-400">Alta</td>
-                    <td className="px-3 py-3 text-xs">Custom CMS</td>
-                    <td className="px-3 py-3 text-xs">Competència a Barcelona.</td>
-                </tr>
-                <tr>
-                    <td className="px-3 py-3 font-bold">Vallescar</td>
-                    <td className="px-3 py-3 text-center text-yellow-400">Mitjana</td>
-                    <td className="px-3 py-3 text-center text-yellow-400">Mitjana</td>
-                    <td className="px-3 py-3 text-center text-green-400">Alta</td>
-                    <td className="px-3 py-3 text-xs">WordPress</td>
-                    <td className="px-3 py-3 text-xs">Rival directe per tecnologia i territori veí.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-            <h4 className="text-white font-bold mb-2">Conclusió Benchmarking</h4>
-            <p className="text-gray-300 text-sm">Tecnològicament, Drivim està per sota de Quadis però pot superar a Vallescar resolent el servidor. Estratègicament, la <strong>capil·laritat local (Taller vs Vendes)</strong> és el veritable "fòssat defensiu" (Moat).</p>
-        </div>
-        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-            <h4 className="text-white font-bold mb-2">Reputació com a Actiu</h4>
-            <p className="text-gray-300 text-sm"><strong>Trust Signal:</strong> 4.8/5 a Coches.net. Drivim supera la mitjana del sector. Cal explotar això al Header: "El concessionari millor valorat de Badalona".</p>
-        </div>
-    </div>
-  </div>
-);
-
-const Section8Strategy = () => (
-  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg animate-fadeIn">
-    <h3 className="text-2xl font-bold text-blue-400 mb-6 border-b border-gray-700 pb-2">8. Extensió Estratègica (Fase 2)</h3>
-    <p className="text-gray-400 text-sm mb-4">Detalls addicionals sobre oportunitats de creixement avançat integrats a les seccions corresponents.</p>
-    
-    <Accordion title="8.3. Enginyeria de Dades WordPress (WPO Profund)" isOpenDefault={true}>
-        <div className="text-gray-300 text-sm space-y-3">
-            <p><strong>Diagnòstic:</strong> Lentitud per acumulació de dades a <code>wp_options</code> (autoloaded data).</p>
-            <p><strong>Acció Quirúrgica:</strong></p>
-            <ol className="list-decimal pl-5 space-y-1">
-                <li><strong>Neteja de Transients:</strong> Eliminar registres caducats.</li>
-                <li><strong>Auditoria Plugins:</strong> Identificar càrregues lentes amb Query Monitor.</li>
-                <li><strong>Redis:</strong> Implementar Object Caching per reduir temps de 3s a 0,5s.</li>
-            </ol>
-        </div>
-    </Accordion>
-  </div>
-);
-
-const Section9Roadmap = () => (
-  <div className="space-y-8 animate-fadeIn">
-    <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-      <h3 className="text-2xl font-bold text-blue-400 mb-6 border-b border-gray-700 pb-2">9. Llistat d'Execució per Prioritats</h3>
-      
-      <div className="space-y-6">
-        {/* Crític */}
-        <div className="border-l-4 border-red-500 pl-6 py-2">
-          <h4 className="text-xl font-bold text-red-400 uppercase mb-3 flex items-center"><AlertTriangle className="mr-2"/> Prioritat Crítica: WPO i UX</h4>
-          <ul className="space-y-4">
-            <li className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <span className="text-white font-bold block mb-1">1. Implementar "Edge Caching" Mòbil</span>
-              <span className="text-gray-400 text-sm">Objectiu: Reduir TTFB de 3,9s a &lt;0,8s. Servir HTML estàtic. Vital per reduir CPC.</span>
-            </li>
-            <li className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <span className="text-white font-bold block mb-1">2. Eliminar Autoplay de Vídeo</span>
-              <span className="text-gray-400 text-sm">Objectiu: Alliberar ample de banda mòbil per millorar LCP i tenir mètriques reals.</span>
-            </li>
-            <li className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <span className="text-white font-bold block mb-1">3. Estabilització Visual (Fixar CLS)</span>
-              <span className="text-gray-400 text-sm">Objectiu: Passar de 0,9 a 0,1 definint dimensions (aspect-ratio) als contenidors.</span>
-            </li>
-          </ul>
-        </div>
-
-        {/* Alta */}
-        <div className="border-l-4 border-yellow-500 pl-6 py-2">
-          <h4 className="text-xl font-bold text-yellow-400 uppercase mb-3">Prioritat Alta: Oportunitats de Negoci</h4>
-          <ul className="space-y-4">
-            <li className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <span className="text-white font-bold block mb-1">4. Optimització Snippets Foton/DFSK</span>
-              <span className="text-gray-400 text-sm">Objectiu: Capturar tràfic massiu d'impressions millorant CTR (Títols/Descripcions).</span>
-            </li>
-            <li className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <span className="text-white font-bold block mb-1">5. Monetització del Blog (Widget Taller)</span>
-              <span className="text-gray-400 text-sm">Objectiu: Convertir lectors informatius en clients postvenda amb "Sticky" widget.</span>
-            </li>
-            <li className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <span className="text-white font-bold block mb-1">6. Segmentació Local GBP Badalona</span>
-              <span className="text-gray-400 text-sm">Objectiu: Verificar fitxa específica "Taller" per capturar cerques de servei.</span>
-            </li>
-          </ul>
-        </div>
-
-        {/* Mitjana */}
-        <div className="border-l-4 border-blue-500 pl-6 py-2">
-          <h4 className="text-xl font-bold text-blue-400 uppercase mb-3">Prioritat Mitjana: Manteniment</h4>
-          <ul className="space-y-4">
-            <li className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <span className="text-white font-bold block mb-1">7. Monitorització Fricció Formulari</span>
-              <span className="text-gray-400 text-sm">Objectiu: Reduir el gap del 8% revisant missatges d'error de validació.</span>
-            </li>
-            <li className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-              <span className="text-white font-bold block mb-1">8. Revisió UX Bookcar</span>
-              <span className="text-gray-400 text-sm">Objectiu: Auditar per què l'estada mitjana és &lt;46s (visibilitat preus/reserva).</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-/* --- UTILS --- */
-
+// Added Card component definition
 const Card = ({ title, status, children }) => {
   const statusColors = {
     critical: 'border-red-500 bg-red-900/10',
@@ -547,40 +164,468 @@ const Card = ({ title, status, children }) => {
   );
 };
 
-const StatusBadge = ({ status }) => {
-  const styles = {
-    critical: 'bg-red-500 text-white',
-    alert: 'bg-yellow-500 text-black',
-    correct: 'bg-green-500 text-white'
-  };
-  const labels = {
-    critical: 'CRÍTIC',
-    alert: 'ALERTA',
-    correct: 'CORRECTE'
-  };
-  return (
-    <span className={`px-3 py-1 rounded-full text-xs font-bold ${styles[status]}`}>
-      {labels[status]}
-    </span>
-  );
-};
+// --- SECTIONS ---
 
-const Accordion = ({ title, children, isOpenDefault = false }) => {
-  const [isOpen, setIsOpen] = useState(isOpenDefault);
-  return (
-    <div className="border border-gray-700 rounded-lg bg-gray-900 overflow-hidden">
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex justify-between items-center p-4 bg-gray-800 hover:bg-gray-750 transition-colors"
-      >
-        <span className="font-bold text-gray-200">{title}</span>
-        {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-      </button>
-      {isOpen && (
-        <div className="p-4 border-t border-gray-700 animate-slideDown">
-          {children}
+const ExecutiveSummary = () => (
+  <div className="space-y-6 animate-fadeIn">
+    <SectionCard title="1. Diagnòstic Executiu: Estat d'Emergència Digital">
+      <div className="space-y-4 text-gray-300">
+        <h4 className="text-lg font-semibold text-white">La Tesi Principal: Fractura Estructural i Cost d'Oportunitat</h4>
+        <p>El web de Drivim, en el seu estat actual (Gener 2026), pateix una <strong>fractura estructural crítica</strong> que compromet la viabilitat de les inversions digitals. Tot i mantenir uns volums de tràfic aparentment saludables a la part superior de l'embut (Top of Funnel), la infraestructura tècnica i l'arquitectura de dades estan sabotejant activament tant la inversió publicitària (Paid Media) com la capacitat de conversió del tràfic orgànic.</p>
+        <p>Estem operant sota el paradigma d'una <strong>ineficiència estructural crítica</strong>: mentre s'injecta pressupost agressivament en captació (amb un 39% de tràfic provinent de pagament), el temps de resposta excessiu del servidor en dispositius mòbils (3,9 segons) provoca que els usuaris abandonin la pàgina abans que aquesta arribi a mostrar cap contingut. Paral·lelament, l'entorn d'escriptori registra un moviment acumulatiu de layout (CLS - Cumulative Layout Shift) de 0,9, desplaçant la gran majoria dels elements visibles durant el procés de càrrega.</p>
+        <p>A diferència del diagnòstic inicial, <strong>l'anàlisi agregada de conversió confirma que la integritat de les dades és robusta</strong>: la suma de tots els esdeveniments de lead específics (Venda, Taller, Finançament) coincideix en un <strong>91,7%</strong> amb els intents d'enviament de formulari (<code>form_submit</code>). Això descarta l'error de mesurament crític, però posa encara més pressió sobre la necessitat de resoldre els problemes de velocitat (WPO) i UX, que són ara els únics culpables del baix rendiment del negoci.</p>
+      </div>
+    </SectionCard>
+
+    <SectionCard title="Tauler de Risc Ampliat (KPIs Crítics i Conseqüències)">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left text-gray-400">
+          <thead className="text-xs text-gray-200 uppercase bg-gray-700">
+            <tr>
+              <th className="px-4 py-3">Àrea</th>
+              <th className="px-4 py-3">Estat</th>
+              <th className="px-4 py-3">Impacte Negoci</th>
+              <th className="px-4 py-3">Diagnòstic Ràpid i Conseqüència</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {SECTION_1_RISK_TABLE.map((item, idx) => (
+              <tr key={idx} className="bg-gray-800 hover:bg-gray-750">
+                <td className="px-4 py-3 font-medium text-white">{item.area}</td>
+                <td className="px-4 py-3"><StatusBadge status={item.status} /></td>
+                <td className="px-4 py-3 text-red-300 font-medium">{item.impact}</td>
+                <td className="px-4 py-3">{item.diagnosis}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </SectionCard>
+  </div>
+);
+
+const TechnicalAudit = () => (
+  <div className="space-y-6 animate-fadeIn">
+    <SectionCard title="2. Auditoria Tècnica Forense (Infraestructura i WPO)">
+      <p className="text-sm text-gray-400 mb-4 italic">Anàlisi creuada detallada de les captures de Core Web Vitals (Mètriques Web Principals: Mòbil vs Escriptori) per identificar l'arrel del problema.</p>
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Updated: using Card component which is now defined */}
+        <Card title="2.1. El Col·lapse del Canal Mòbil" status="critical">
+          <div className="space-y-3 text-gray-300 text-sm">
+            <p className="flex items-start"><Smartphone size={16} className="mr-2 text-red-400 mt-1 flex-shrink-0"/> El rendiment mòbil no és simplement "lent", és <strong>disfuncional</strong>.</p>
+            <ul className="list-disc pl-4 space-y-2">
+              <li><strong>L'Evidència:</strong> TTFB (Time To First Byte) de <strong>3,9 segons</strong>.</li>
+              <li><strong>L'Anàlisi Forense Profunda:</strong> Aquesta mètrica aïlla estrictament el rendiment del servidor (Backend). Quan un usuari fa clic, la pantalla es queda "congelada" 4 segons.</li>
+              <li><strong>La Paradoxa Tècnica:</strong> A l'escriptori, el TTFB és d'1,5s. Confirma un problema de <strong>configuració deficient de la Caché</strong> per a dispositius mòbils.</li>
+              <li className="text-red-300"><strong>Impacte Econòmic:</strong> Rebot Zero. Paguem clics que marxen abans de carregar.</li>
+            </ul>
+          </div>
+        </Card>
+
+        <Card title="2.2. Inestabilitat Visual (CLS) en Escriptori" status="critical">
+          <div className="space-y-3 text-gray-300 text-sm">
+            <p className="flex items-start"><Server size={16} className="mr-2 text-red-400 mt-1 flex-shrink-0"/> Problema greu d'experiència d'usuari.</p>
+            <ul className="list-disc pl-4 space-y-2">
+              <li><strong>L'Evidència:</strong> CLS (Cumulative Layout Shift) de <strong>0,9</strong>.</li>
+              <li><strong>El Fet Tècnic:</strong> El 90% de l'estructura visual es desplaça després de pintar-se. Localitzat quirúrgicament a la <strong>Homepage i Landing Pages de Model</strong>.</li>
+              <li><strong>L'Error de Codi:</strong> El navegador "no sap" quin espai ocuparà la imatge o el bàner principal fins que es descarrega.</li>
+              <li className="text-green-300"><strong>La Solució Obligatòria:</strong> Implementar <code>aspect-ratio</code> o <code>min-height</code> al CSS.</li>
+            </ul>
+          </div>
+        </Card>
+      </div>
+
+      <div className="bg-blue-900/10 p-4 rounded-lg border border-blue-800 mt-6">
+        <h4 className="text-blue-300 font-bold mb-2">2.3. Enginyeria de Dades WordPress i WPO Profund (Causa Arrel)</h4>
+        <p className="text-gray-300 text-sm mb-3"><strong>Diagnòstic Tècnic Ampliat:</strong> L'auditoria externa confirma que la lentitud (TTFB de 3,9s) prové de la base de dades. En l'ecosistema WordPress detectat, això sol ser causat per l'acumulació de dades "escombraries" a la taula <code>wp_options</code>.</p>
+        <p className="text-white text-sm font-bold mb-2">Acció Quirúrgica Recomanada:</p>
+        <ol className="list-decimal pl-5 text-sm text-gray-400 space-y-1">
+          <li><strong>Neteja de Transients:</strong> Eliminar registres temporals caducats.</li>
+          <li><strong>Auditoria de Plugins (Query Monitor):</strong> Identificar quin plugin específic està generant les <em>Slow Queries</em>.</li>
+          <li><strong>Implementació de Redis (Object Caching):</strong> Servir consultes des de RAM (0,5s) en lloc de disc (3s).</li>
+        </ol>
+      </div>
+    </SectionCard>
+  </div>
+);
+
+const CroAudit = () => (
+  <div className="space-y-6 animate-fadeIn">
+    <SectionCard title="3. Auditoria de Conversió i Integritat de Dades (CRO)">
+      <p className="text-sm text-gray-400 mb-4">Anàlisi profunda i recalculada dels esdeveniments de GA4.</p>
+      
+      <AccordionItem title="3.1. Validació de Coherència del Funnel (Dades Correctes)" defaultOpen={true}>
+        <p className="mb-2">Reanalitzant l'estructura de conversió sota la premissa que <code>form_submit</code> (intent) ha de ser equivalent a la suma agregada de tots els tipus de "Lead" (èxit):</p>
+        <div className="grid grid-cols-2 gap-4 my-4">
+          <div className="bg-gray-900 p-3 rounded border border-gray-700">
+            <p className="text-xs text-gray-500">Total Intents (form_submit)</p>
+            <p className="text-xl font-bold text-white">9.061</p>
+          </div>
+          <div className="bg-gray-900 p-3 rounded border border-gray-700">
+            <p className="text-xs text-gray-500">Total Èxits (Suma 6 Leads)</p>
+            <p className="text-xl font-bold text-green-400">8.306</p>
+          </div>
         </div>
-      )}
+        <p className="mb-2"><strong>El Diagnòstic:</strong> El sistema està capturant el <strong>91,7%</strong> de les conversions. El "gap" residual del 8,3% (755 usuaris) és una fricció estàndard en formularis llargs.</p>
+        <p className="text-green-300 font-semibold">Conclusió Tècnica: El tracking de conversions funciona correctament. No hi ha cap "forat negre".</p>
+      </AccordionItem>
+    </SectionCard>
+  </div>
+);
+
+const ContentSeo = () => (
+  <div className="space-y-6 animate-fadeIn">
+    <SectionCard title="4. Auditoria d'Estratègia de Continguts i SEO (On-Page)">
+      <p className="text-sm text-gray-400 mb-4">La correlació creuada revela una ineficiència estructural en l'embut d'adquisició orgànica.</p>
+
+      <div className="mb-6">
+        <h4 className="text-lg font-bold text-white mb-2">4.1. Anàlisi Exhaustiva de Pàgines de Destinació (Landing Pages)</h4>
+        <div className="overflow-x-auto rounded-lg border border-gray-700">
+          <table className="w-full text-xs text-left text-gray-300">
+            <thead className="text-xs text-gray-200 uppercase bg-gray-700">
+              <tr>
+                <th className="px-3 py-2">#</th>
+                <th className="px-3 py-2">URL</th>
+                <th className="px-3 py-2 text-right">Clics</th>
+                <th className="px-3 py-2 text-right">% Tràfic</th>
+                <th className="px-3 py-2 text-right">Temps</th>
+                <th className="px-3 py-2">Categoria</th>
+                <th className="px-3 py-2">Diagnòstic</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {LANDING_PAGES_DATA.map((row) => (
+                <tr key={row.id} className="bg-gray-800 hover:bg-gray-750">
+                  <td className="px-3 py-2">{row.id}</td>
+                  <td className="px-3 py-2 font-mono text-blue-300 truncate max-w-xs" title={row.url}>{row.url}</td>
+                  <td className="px-3 py-2 text-right">{row.clicks}</td>
+                  <td className="px-3 py-2 text-right">{row.percent}</td>
+                  <td className={`px-3 py-2 text-right font-bold ${row.time.includes('s') && parseInt(row.time) < 60 ? 'text-red-400' : 'text-green-400'}`}>{row.time}</td>
+                  <td className="px-3 py-2"><span className="bg-gray-700 px-1 rounded">{row.cat}</span></td>
+                  <td className="px-3 py-2">{row.diag}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <AccordionItem title="4.1.1 Diagnòstic Forense de Continguts i Estratègia" defaultOpen={true}>
+        <ul className="list-disc pl-4 space-y-2">
+          <li><strong>Dominació del "Low Intent" (El problema del Blog):</strong> Les URLs de Blog sumen 24.127 clics (27% del tràfic total). Acció: Transformar pàgines en punts d'entrada a Taller amb widgets.</li>
+          <li><strong>La Força Emergent de Foton:</strong> Foton Tunland supera a models consolidats. Oportunitat en demanda insatisfeta de Pick-ups.</li>
+          <li><strong>El col·lapse de retenció a Bookcar:</strong> Temps d'estada crítics (46s i 39s). Urgent revisar la UX.</li>
+        </ul>
+      </AccordionItem>
+
+      <AccordionItem title="4.1.2 Estratègia 'Middle of Funnel' (MoFu): Monetitzant el Blog (Fase 2)">
+        <p><strong>El Tresor sense Explotar:</strong> Tenim milers de visites mensuals en articles de manteniment. Molts no estan llestos per comprar avui.</p>
+        <p className="mt-2"><strong>Estratègia de Captació (Nurturing):</strong> Implementarem "Lead Magnets" de valor afegit (Ex: "Checklist de Manteniment").</p>
+        <p className="mt-2"><strong>Resultat:</strong> Capturem el correu i entrem al Top of Mind via newsletter, generant confiança per quan necessitin el taller.</p>
+      </AccordionItem>
+
+      <div className="mt-8">
+        <h4 className="text-lg font-bold text-white mb-2">4.2. Anàlisi de Consultes de Cerca - GSC</h4>
+        <div className="overflow-x-auto rounded-lg border border-gray-700 mb-4">
+          <table className="w-full text-xs text-left text-gray-300">
+            <thead className="text-xs text-gray-200 uppercase bg-gray-700">
+              <tr>
+                <th className="px-3 py-2">#</th>
+                <th className="px-3 py-2">Consulta</th>
+                <th className="px-3 py-2 text-right">Clics</th>
+                <th className="px-3 py-2 text-right">Impr.</th>
+                <th className="px-3 py-2 text-right">CTR</th>
+                <th className="px-3 py-2 text-right">Pos.</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {SEARCH_QUERIES_DATA.map((row) => (
+                <tr key={row.id} className="bg-gray-800 hover:bg-gray-750">
+                  <td className="px-3 py-2">{row.id}</td>
+                  <td className="px-3 py-2 font-medium text-white">{row.query}</td>
+                  <td className="px-3 py-2 text-right">{row.clicks}</td>
+                  <td className="px-3 py-2 text-right">{row.impr}</td>
+                  <td className="px-3 py-2 text-right">{row.ctr}</td>
+                  <td className="px-3 py-2 text-right">{row.pos}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
+          <h5 className="font-bold text-blue-300 mb-2">4.2.1 Auditoria de "Keyword Gap" (Fase 2)</h5>
+          <p className="text-gray-400 text-sm"><strong>El Problema:</strong> Competidors com Quadis acaparen el tràfic de termes transaccionals ("oferta peugeot 3008 km0").</p>
+          <p className="text-gray-400 text-sm mt-1"><strong>Acció:</strong> Crear <strong>"Hubs Transaccionals"</strong>: pàgines de categoria persistents optimitzades per a clusters semàntics.</p>
+        </div>
+      </div>
+    </SectionCard>
+  </div>
+);
+
+const AcquisitionAudit = () => (
+  <div className="space-y-6 animate-fadeIn">
+    <SectionCard title="5. Auditoria d'Adquisició i Dependència (TRÀFIC)">
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card title="5.1. Vulnerabilitat Financera en Paid Search" status="alert">
+          <p className="text-gray-300 text-sm mb-2"><strong>Dada:</strong> El 39,37% del tràfic total prové de Paid Search (209.530 sessions).</p>
+          <p className="text-gray-300 text-sm mb-2"><strong>Risc Ocult:</strong> Els Core Web Vitals deficients (WPO) baixen el <em>Quality Score</em>.</p>
+          <p className="text-gray-300 text-sm"><strong>Conseqüència:</strong> Estem pagant una "multa d'eficiència" a Google (CPC més car per la mateixa posició).</p>
+        </Card>
+        <Card title="5.2. El Potencial del Social Orgànic" status="correct">
+          <p className="text-gray-300 text-sm mb-2"><strong>Dada:</strong> 15,8% de tràfic prové d'Organic Social.</p>
+          <p className="text-gray-400 text-sm"><strong>Lectura:</strong> Indica una comunitat fidel. Cal revisar les Landing Pages on aterra aquest tràfic (Home vs Oferta específica) per millorar la conversió.</p>
+        </Card>
+      </div>
+    </SectionCard>
+  </div>
+);
+
+const DataIntegrity = () => (
+  <div className="space-y-6 animate-fadeIn">
+    <SectionCard title="6. Auditoria d'Integritat de Dades - Events GA4">
+      <h4 className="text-lg font-bold text-white mb-2">6.1. Validació Tècnica de la Captació de Leads</h4>
+      <div className="overflow-x-auto rounded-lg border border-gray-700 mb-4">
+        <table className="w-full text-sm text-left text-gray-300">
+          <thead className="text-xs text-gray-200 uppercase bg-gray-700">
+            <tr>
+              <th className="px-4 py-3">Concepte</th>
+              <th className="px-4 py-3">Esdeveniments GA4 Inclosos</th>
+              <th className="px-4 py-3 text-right">Volum Total</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {INTEGRITY_DATA.map((row, idx) => (
+              <tr key={idx} className="bg-gray-800">
+                <td className="px-4 py-3 font-medium text-white">{row.concept}</td>
+                <td className="px-4 py-3 text-xs">{row.events}</td>
+                <td className="px-4 py-3 text-right font-bold">{row.volume}</td>
+              </tr>
+            ))}
+            <tr className="bg-gray-750 font-bold border-t-2 border-gray-600">
+              <td className="px-4 py-3 text-white">DIFERÈNCIA (GAP)</td>
+              <td className="px-4 py-3 text-xs">A - B</td>
+              <td className="px-4 py-3 text-right text-yellow-400">755</td>
+            </tr>
+            <tr className="bg-blue-900/20 font-bold border-t border-gray-600">
+              <td className="px-4 py-3 text-blue-300">% DE COHERÈNCIA</td>
+              <td className="px-4 py-3 text-xs">(B / A) * 100</td>
+              <td className="px-4 py-3 text-right text-blue-300 text-lg">91,7%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-gray-500 italic mb-6">*Nota: S'han exclòs expressament els leads provinents de canals de Xat (chat_lead antic, timbal_chat_lead actual).</p>
+
+      <AccordionItem title="Anàlisi Final de Dades" defaultOpen={true}>
+        <ol className="list-decimal pl-4 space-y-3">
+          <li><strong>Integritat Confirmada:</strong> Coincidència del 91,7%. Estàndard de qualitat excel·lent. El marge residual és acceptable en formularis senzills (fricció natural).</li>
+          <li>
+            <strong>Fals Positiu en Consum de Vídeo (WPO):</strong> L'esdeveniment <code>video_progress</code> (254k) és un miratge per l'Autoplay.
+            <br/><span className="text-red-300 font-bold">Conseqüència:</span> Satura l'ample de banda mòbil i causa el TTFB lent.
+            <br/><span className="text-green-300 font-bold">Acció:</span> Desactivar l'autoplay immediatament.
+          </li>
+        </ol>
+      </AccordionItem>
+    </SectionCard>
+  </div>
+);
+
+const ExternalAudit = () => (
+  <div className="space-y-6 animate-fadeIn">
+    <SectionCard title="7. Auditoria Externa i Benchmarking Competitiu (Dades Reals)">
+      <p className="text-sm text-gray-400 mb-4">Anàlisi forense digital de l'entorn competitiu immediat (Quadis, M-Automoció, Grup Maas, Vallescar).</p>
+      
+      <div className="overflow-x-auto rounded-lg border border-gray-700 mb-6">
+        <table className="w-full text-xs text-left text-gray-300">
+          <thead className="text-xs text-gray-200 uppercase bg-gray-700">
+            <tr>
+              <th className="px-3 py-2">Competidor</th>
+              <th className="px-3 py-2 text-center">Velocitat</th>
+              <th className="px-3 py-2 text-center">Estructura</th>
+              <th className="px-3 py-2 text-center">SEO Local</th>
+              <th className="px-3 py-2 text-center">Continguts</th>
+              <th className="px-3 py-2">Stack</th>
+              <th className="px-3 py-2">Amenaça</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {BENCHMARKING_DATA.map((row, idx) => (
+              <tr key={idx} className={row.comp === 'DRIVIM' ? 'bg-blue-900/20' : 'bg-gray-800'}>
+                <td className="px-3 py-2 font-bold text-white">{row.comp}</td>
+                <td className={`px-3 py-2 text-center font-bold text-${row.speedColor}-400`}>{row.speed}</td>
+                <td className={`px-3 py-2 text-center text-${row.structColor}-400`}>{row.struct}</td>
+                <td className={`px-3 py-2 text-center font-bold text-${row.localColor}-400`}>{row.local}</td>
+                <td className="px-3 py-2 text-center">-</td>
+                <td className="px-3 py-2">{row.stack}</td>
+                <td className="px-3 py-2 text-xs">{row.threat}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <AccordionItem title="7.2. Anàlisi de Profunditat: On Guanya i On Perd Drivim" defaultOpen={true}>
+        <ul className="list-disc pl-4 space-y-2">
+          <li><strong>Drivim vs. Quadis:</strong> Quadis té força bruta i tecnologia Enterprise. Drivim guanya en agilitat i nínxol (Foton, DFSK, blog). Estratègia: Potenciar Long Tail.</li>
+          <li><strong>Drivim vs. Vallescar:</strong> Vallescar és el mirall tecnològic (també WordPress). Si Drivim soluciona el TTFB, superarà tecnològicament a Vallescar.</li>
+          <li><strong>Drivim vs. M-Automoció:</strong> M-Automoció és forta a BCN ciutat. Drivim domina "Taller" a Badalona. Estratègia: Expandir el model "Servei Oficial" cap a BCN.</li>
+        </ul>
+      </AccordionItem>
+      
+      <div className="bg-gray-900 p-4 rounded border border-gray-700 mt-4">
+        <h5 className="font-bold text-blue-300">Conclusió Benchmarking</h5>
+        <p className="text-gray-400 text-sm">Tecnològicament, Drivim pot superar a Grup Maas i Vallescar si resol el servidor. La capil·laritat local (Taller vs Vendes) és el "fòssat defensiu".</p>
+      </div>
+    </SectionCard>
+  </div>
+);
+
+const Section8Strategy = () => (
+  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg animate-fadeIn">
+    <h3 className="text-2xl font-bold text-blue-400 mb-6 border-b border-gray-700 pb-2">8. Extensió Estratègica (Fase 2)</h3>
+    <p className="text-gray-400 text-sm mb-4">Detalls addicionals sobre oportunitats de creixement avançat integrats a les seccions corresponents.</p>
+    
+    <AccordionItem title="8.3. Enginyeria de Dades WordPress (WPO Profund)" defaultOpen={true}>
+        <div className="text-gray-300 text-sm space-y-3">
+            <p><strong>Diagnòstic:</strong> Lentitud per acumulació de dades a <code>wp_options</code> (autoloaded data).</p>
+            <p><strong>Acció Quirúrgica:</strong></p>
+            <ol className="list-decimal pl-5 space-y-1">
+                <li><strong>Neteja de Transients:</strong> Eliminar registres caducats.</li>
+                <li><strong>Auditoria Plugins:</strong> Identificar càrregues lentes amb Query Monitor.</li>
+                <li><strong>Redis:</strong> Implementar Object Caching per reduir temps de 3s a 0,5s.</li>
+            </ol>
+        </div>
+    </AccordionItem>
+  </div>
+);
+
+const Roadmap = () => (
+  <div className="space-y-6 animate-fadeIn">
+    <SectionCard title="9. Llistat d'Execució per Prioritats">
+      <div className="space-y-6">
+        
+        <div className="border-l-4 border-red-500 pl-4">
+          <h4 className="text-red-400 font-bold uppercase mb-2">Prioritat Crítica: Rendiment Web (WPO) i UX</h4>
+          <ul className="space-y-2 text-gray-300 text-sm">
+            <li><strong>1. Implementar "Edge Caching" per a Mòbils:</strong> Reduir TTFB de 3,9s a &lt;0,8s. Servir HTML estàtic.</li>
+            <li><strong>2. Correcció Implementació Vídeo:</strong> Eliminar Autoplay. Alliberar ample de banda i netejar mètriques.</li>
+            <li><strong>3. Estabilització Visual (Fixar CLS):</strong> Afegir <code>aspect-ratio</code> i <code>min-height</code> als contenidors.</li>
+          </ul>
+        </div>
+
+        <div className="border-l-4 border-yellow-500 pl-4">
+          <h4 className="text-yellow-400 font-bold uppercase mb-2">Prioritat Alta: Oportunitats de Negoci</h4>
+          <ul className="space-y-2 text-gray-300 text-sm">
+            <li><strong>4. Optimització Snippets Marques Xineses:</strong> Reescriure Metas de Foton/DFSK per capturar tràfic d'impressions.</li>
+            <li><strong>5. Monetització del Blog:</strong> Inserir mòdul "Sticky" de Cita Prèvia a posts de manteniment.</li>
+            <li><strong>6. Segmentació Local GBP Badalona:</strong> Verificar fitxa específica "Taller".</li>
+          </ul>
+        </div>
+
+        <div className="border-l-4 border-blue-500 pl-4">
+          <h4 className="text-blue-400 font-bold uppercase mb-2">Prioritat Mitjana: Manteniment</h4>
+          <ul className="space-y-2 text-gray-300 text-sm">
+            <li><strong>7. Monitorització Fricció Formulari:</strong> Revisar missatges d'error de validació en mòbil (gap 8%).</li>
+            <li><strong>8. Revisió UX Bookcar:</strong> Auditar estada mitjana baixa (&lt;46s).</li>
+          </ul>
+        </div>
+
+      </div>
+    </SectionCard>
+  </div>
+);
+
+const DrivimAuditApp = () => {
+  const [activeSection, setActiveSection] = useState('executive');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const sections = [
+    { id: 'executive', title: '1. Diagnòstic Executiu', icon: <Activity size={20} /> },
+    { id: 'technical', title: '2. Auditoria Tècnica', icon: <Server size={20} /> },
+    { id: 'cro', title: '3. Conversió i Integritat', icon: <BarChart2 size={20} /> },
+    { id: 'content', title: '4. Continguts i SEO', icon: <Globe size={20} /> },
+    { id: 'acquisition', title: '5. Adquisició', icon: <Users size={20} /> },
+    { id: 'integrity', title: '6. Detall Integritat GA4', icon: <Lock size={20} /> },
+    { id: 'external', title: '7. Auditoria Externa', icon: <Search size={20} /> },
+    { id: 'strategy', title: '8. Extensió Estratègica (Fase 2)', icon: <Activity size={20} /> },
+    { id: 'roadmap', title: '9. Pla d\'Execució', icon: <Target size={20} /> },
+  ];
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  return (
+    <div className="flex h-screen bg-gray-900 text-gray-100 font-sans overflow-hidden">
+      {/* Sidebar */}
+      <div 
+        className={`${isSidebarOpen ? 'w-72' : 'w-20'} bg-gray-800 border-r border-gray-700 transition-all duration-300 flex flex-col flex-shrink-0`}
+      >
+        <div className="p-4 border-b border-gray-700 flex justify-between items-center h-16">
+          {isSidebarOpen && <h1 className="font-bold text-xl text-blue-400 tracking-tight">AUDITORIA DRIVIM</h1>}
+          <button onClick={toggleSidebar} className="p-2 hover:bg-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors">
+            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+          {sections.map((section) => (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className={`w-full flex items-center p-3 rounded-lg transition-all duration-200 group ${
+                activeSection === section.id 
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 
+                  : 'hover:bg-gray-700 text-gray-400 hover:text-white'
+              }`}
+            >
+              <span className={`flex-shrink-0 transition-transform duration-200 ${activeSection === section.id ? 'scale-110' : 'group-hover:scale-110'}`}>
+                {section.icon}
+              </span>
+              {isSidebarOpen && <span className="ml-3 text-sm font-medium truncate">{section.title}</span>}
+            </button>
+          ))}
+        </nav>
+        <div className="p-4 border-t border-gray-700 text-xs text-gray-500">
+          {isSidebarOpen && (
+            <div className="flex flex-col space-y-1">
+              <span className="font-mono">VERSIÓ FINAL</span>
+              <span>Gener 2026</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden w-full">
+        {/* Top Header */}
+        <header className="bg-gray-800 border-b border-gray-700 h-16 flex items-center justify-between px-6 shadow-md z-10 flex-shrink-0">
+          <div className="flex items-center space-x-4">
+            <h2 className="text-lg font-bold text-white truncate">Auditoria Estratègica 360º</h2>
+            <span className="hidden md:inline-block h-4 w-px bg-gray-600"></span>
+            <span className="hidden md:inline-block text-sm text-gray-400">Anàlisi Forense Integral</span>
+          </div>
+          <div className="flex items-center space-x-3">
+            <span className="bg-red-500/10 text-red-400 px-3 py-1 rounded-full text-xs font-bold border border-red-500/20 whitespace-nowrap">
+              CONFIDENCIAL
+            </span>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-900 scroll-smooth">
+          <div className="max-w-5xl mx-auto pb-20">
+            {activeSection === 'executive' && <ExecutiveSummary />}
+            {activeSection === 'technical' && <TechnicalAudit />}
+            {activeSection === 'cro' && <CroAudit />}
+            {activeSection === 'content' && <ContentSeo />}
+            {activeSection === 'acquisition' && <AcquisitionAudit />}
+            {activeSection === 'integrity' && <DataIntegrity />}
+            {activeSection === 'external' && <ExternalAudit />}
+            {activeSection === 'strategy' && <Section8Strategy />}
+            {activeSection === 'roadmap' && <Roadmap />}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
